@@ -16,10 +16,10 @@ import time
 
 GPIO.setwarnings(False)                     # Ignore any warning
 GPIO.setmode(GPIO.BOARD)                    # Use physical pin numbering system (40pin) on the board
-GPIO.setup(8, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(11, GPIO.OUT, initial=GPIO.LOW)
 
 for i in range(20):
-    GPIO.output(8, GPIO.HIGH)
+    GPIO.output(11, GPIO.HIGH)
     time.sleep(1)
-    GPIO.output(8, GPIO.LOW)
+    GPIO.output(11, GPIO.LOW)
     time.sleep(1)
