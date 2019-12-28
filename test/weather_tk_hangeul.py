@@ -1,6 +1,15 @@
 #!/usr/bin/python3
 #-*- coding: utf8 -*-
-
+"""
+Title       weather_tk_hangeul.py
+Author      Kihong Kim (Undergraduate Student, School of Computing, KAIST)
+Made        27-Dec-2019
+Comment     This program is test for the internet, python Tkinter, and Hangeul on Raspberry Pi.
+            For these purpose, it is going to do web-crawling.
+            Thus, it might require the internet connection.
+            Test process:
+                Just execute this program.
+"""
 import requests
 from tkinter import *
 
