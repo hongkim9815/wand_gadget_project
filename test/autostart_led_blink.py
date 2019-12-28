@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """
 Title       autostart_led_blink.py
 Author      Kihong Kim (Undergraduate Student, School of Computing, KAIST)
@@ -11,15 +11,15 @@ Comment     This program is test for autostart on Raspberry Pi.
                    (Need to determine rc.local, systemd)
 """
 
-import RPi.GPIO
+import RPi.GPIO as GPIO
 import time
 
-RPi.GPIO.setwarnings(False)                     # Ignore any warning
-RPi.GPIO.setmode(GPIO.BOARD)                    # Use physical pin numbering system (40pin) on the board
-RPi.GPIO.setup(8, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setwarnings(False)                     # Ignore any warning
+GPIO.setmode(GPIO.BOARD)                    # Use physical pin numbering system (40pin) on the board
+GPIO.setup(8, GPIO.OUT, initial=GPIO.LOW)
 
-while True:
-    RPi.GPIO.output(8, GPIO.HIGH)
+for i in range(20):
+    GPIO.output(8, GPIO.HIGH)
     time.sleep(1)
-    RPi.GPIO.output(8, GPIO.LOW)
+    GPIO.output(8, GPIO.LOW)
     time.sleep(1)
