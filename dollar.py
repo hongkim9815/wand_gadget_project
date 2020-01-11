@@ -1,3 +1,5 @@
+#!/usr/bin/python
+#
 # Python $1 Unistroke Recognizer
 #
 # This file contains a Python implementation of the $1 algorithm.

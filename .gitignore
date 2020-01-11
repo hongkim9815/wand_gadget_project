@@ -142,3 +142,6 @@ tags
 [._]*.un~
 
 # End of https://www.gitignore.io/api/vim,linux,python
+
+fire.py
+pySerial.py
