@@ -18,31 +18,56 @@ import time
 import requests
 import json
 import time
-from lib.dollar import Dollar
+import os
+from libraries.dollar import Dollar
+
+
+GPIO.setwarnings(False)                     # Ignore any warning
+GPIO.setmode(GPIO.BOARD)                    # Use physical pin numbering system (40pin) on the board
+GPIO.setup(11, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(13, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(15, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(19, GPIO.OUT, initial=GPIO.LOW)
 
 def uint2int(x):
     return x if x < 128 else x - 256
 
-def recognizerMotion(magicid, x, y, points):
+def recognizerMotion(magicid, points):
     recognizer = Dollar()
     points.reverse()
+
     if(len(points)<100):
         return
 
-    text = recognizer.get_gesture(points)
-    print(text)
-    print(magicid)
-    result = requests.get("http://ec2-15-165-111-76.ap-northeast-2.compute.amazonaws.com:80/api/Gateway/JSON/"+magicid)
-    print(result)
-    spell = json.loads(result.txt)['result']
+    gesture = recognizer.get_gesture(points)
+    print(gesture)
+    print("SEND REQUEST")
+    result = requests.get("http://ec2-13-209-200-6.ap-northeast-2.compute.amazonaws.com"
+                          + "/api/Gateway/JSON/%02d" % (magicid))
+    print("GOT REQUEST")
+    print(result.text)
+    spell = json.loads(result.text)['result']
     data = json.loads(spell)
-    print(data)
 
-    if data.get(text):
-        action = data[text]
+    if data.get(gesture):
+        print("==================")
+        action = data[gesture]
         print(action)
         for i in action['marble']:
-            print(i['color'])
+            color = i['color']
+            delay = i['delay']
+            if color == 'red':
+                port = 11
+            elif color == 'yellow':
+                port = 13
+            elif color == 'blue':
+                port = 15
+            else:
+                port = 19
+            GPIO.output(port, GPIO.HIGH)
+            time.sleep(delay)
+            GPIO.output(port, GPIO.LOW)
+        print("==================")
 
 def data_encrypt(data):
     data_enc = {}
@@ -61,36 +86,42 @@ def printData(data):
           "(" + str(int.from_bytes(data[2:4], byteorder='big')) +")")
     print("rest:    " + data[4:].hex())
 
+def connect_new_serial():
+    try:
+        ser = serial.Serial("/dev/ttyAMA0", 115200, timeout = 0.1)
+    except serial.serialutil.SerialException: 
+        os.system('sudo chmod 777 /dev/ttyAMA0')
+        time.sleep(1)
+        ser = serial.Serial("/dev/ttyAMA0", 115200, timeout = 0.1)
+    return ser
 
-s = serial.Serial("/dev/ttyAMA0", 115200, timeout = 0.1)
+s = connect_new_serial()
 s.inter_byte_timeout = 0.05
 
-x = []
-y = []
 points = []
 
 while(True):
-    data = s.read(10000)
+    try:
+        data = s.read(10000)
+    except serial.serialutil.SerialException:
+        print("wait a second...")
+        time.sleep(1)
+        s = connect_new_serial()
+        points = []
+
     # data = b"Kihong Working Now"
-    if (len(str(data)) > 0 and data[0] == 0x02):  # data[0] = 0x02: End to send
+    if (len(str(data)) > 4 and data[0] is 0x02):  # data[0] = 0x02: End to send
         printData(data)
         magicid = int.from_bytes(data[2:4], byteorder='big')
         for i in range(4, len(data) - 1, 2):
-            x.append(uint2int(data[i]) + 300)
-            y.append(-uint2int(data[i+1]) + 300)
             point = (uint2int(data[i]) + 300, -uint2int(data[i+1]) + 300)
             points.append(point)
-        recognizerMotion(magicid, x, y, points)
-        x = []
-        y = []
+        recognizerMotion(magicid, points)
         points = []
     elif(len(str(data)) > 4):                         # data[0] = 0x01: Start to send
         printData(data)
-
         magicid = int.from_bytes(data[2:4], byteorder='big')
         for i in range(4, len(data) - 1, 2):
-            x.append(uint2int(data[i]) + 300)
-            y.append(-uint2int(data[i+1]) + 300)
             point = (uint2int(data[i]) + 300, -uint2int(data[i+1]) + 300)
             points.append(point)
 
