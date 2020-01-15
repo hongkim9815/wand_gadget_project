@@ -3,13 +3,11 @@
 Title       wand.py
 Author      Kihong Kim (Undergraduate Student, School of Computing, KAIST)
 Made        28-Dec-2019
-Comment     This program is a testfile for checking the connection between wand and Raspberry Pi.
-            Required electric circuit is just connecting LED with pin6 (GND) and pin8 (GPIO14, TXD).
-            Also, you need a wand for the test.
-            Test process:
-                1) Just execute this program.
-                2) Swing wand and gather RF-Data.
-                3) Check the read data whether the data is aligned well or not.
+Comment     This program is a file for controlling connection between wand and Raspberry Pi.
+            Required electric circuit is connecting on pin11, pin13, pin15, and pin19 for LED, pin8
+            for TXD, and pin9 for RXD of NDmesh module (RF connection module).
+            Usage:
+                Copy this file into rc.local or systemd for autostart.
 """
 
 import serial
@@ -29,8 +27,10 @@ GPIO.setup(13, GPIO.OUT, initial=GPIO.LOW)
 GPIO.setup(15, GPIO.OUT, initial=GPIO.LOW)
 GPIO.setup(19, GPIO.OUT, initial=GPIO.LOW)
 
+
 def uint2int(x):
     return x if x < 128 else x - 256
+
 
 def recognizerMotion(magicid, points):
     recognizer = Dollar()
@@ -69,12 +69,14 @@ def recognizerMotion(magicid, points):
             GPIO.output(port, GPIO.LOW)
         print("==================")
 
+
 def data_encrypt(data):
     data_enc = {}
     data_enc['data_type'] = data[0]
     data_enc['UNKNOWN_1'] = data[1]
     data_enc['wand_uid'] = int.from_bytes(data[2:4], byteorder='big')
     return data_enc
+
 
 def printData(data):
     print("====================")
@@ -86,14 +88,17 @@ def printData(data):
           "(" + str(int.from_bytes(data[2:4], byteorder='big')) +")")
     print("rest:    " + data[4:].hex())
 
+
 def connect_new_serial():
     try:
         ser = serial.Serial("/dev/ttyAMA0", 115200, timeout = 0.1)
-    except serial.serialutil.SerialException: 
+    except serial.serialutil.SerialException:
         os.system('sudo chmod 777 /dev/ttyAMA0')
         time.sleep(1)
         ser = serial.Serial("/dev/ttyAMA0", 115200, timeout = 0.1)
     return ser
+
+
 
 s = connect_new_serial()
 s.inter_byte_timeout = 0.05
