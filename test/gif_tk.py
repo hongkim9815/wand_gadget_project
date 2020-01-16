@@ -18,15 +18,36 @@ root['bg'] = 'white'
 
 sources_path = "../sources/"
 
+
 def gcd(a, b):
     while b is not 0:
         a, b = (b, a % b) if a > b else (a, b % a)
     return a
 
+
+def gif2list(filename, minf=0, maxf=9999):
+    it, itmax = minf, maxf
+    retlist = []
+
+    while itmax != it:
+        try:
+            retlist.append(tk.PhotoImage(file=filename,
+                                         format='gif -index {}'.format(it)))
+            it += 1
+            print(it)
+        except tk.TclError:
+            break
+
+    if len(retlist) is 0:
+        raise Exception("File: " + filename + "is not exist")
+
+    return retlist
+
+
 class AnimatedGif:
     def __init__(self, root, delay=0.04):
         self.root = root
-        self.canvas = tk.Canvas(self.root, bg="white", width=500, height=500)
+        self.canvas = tk.Canvas(self.root, bg="white", width=1024, height=768)
         self.canvas.pack()
         self.canvas.place(x=0, y=0)
         self.gifs = []
@@ -43,10 +64,10 @@ class AnimatedGif:
         self.cis.append(None)
         return len(self.gifs) - 1
 
-    def remove(self, index, frame=1):
+    def remove(self, index):
         # self.max_frame = ??     # Convension?
-        self.gifs = self.gifs[:index] + self.gifs[index+1:]
-        self.cis.append
+        self.gifs[index] = None
+        # self.cis[index] = None  # Done by self._configureLabel()
 
     def start(self):
         self._animate()
@@ -56,43 +77,34 @@ class AnimatedGif:
 
     def _configureLabel(self):
         for i in range(len(self.gifs)):
-            frame4gif = self._it % len(self.gifs[i])
-            self.canvas.delete(self.cis[i])
-            self.cis[i] = self.canvas.create_image(i * 200, i * 200, image=self.gifs[i][frame4gif])
-
+            if self.gifs[i] is not None:
+                frame4gif = self._it % len(self.gifs[i])
+                self.canvas.delete(self.cis[i])
+                self.cis[i] = self.canvas.create_image((i+2) * 100, (i+2) * 100,
+                                                       image=self.gifs[i][frame4gif])
+            else:
+                self.canvas.delete(self.cis[i])
     def _animate(self):
         self._configureLabel()
         self._it = (self._it + 1) % self.max_frame
+        if self._it > 110:
+            self.root.after(int(self.delay * 1000), self.remove(3))
         if self.execute:
-            self.root.after(int(self.delay * 10000), self._animate)
+            self.root.after(int(self.delay * 1000), self._animate)
 
-def gif2list(filename, given_list, maxf=9999):
-    it = 0
-    while maxf != it:
-        try:
-            given_list.append(tk.PhotoImage(file=filename,
-                                            format='gif -index {}'.format(it)))
-            it += 1
-            print(it)
-        except tk.TclError:
-            break
 
-    if len(given_list) is 0:
-        raise Exception("File: " + filename + "is not exist")
+gif1_list = gif2list(sources_path + 'gif1.gif', 0, 30)
+gif2_list = gif2list(sources_path + 'gif2.gif')
+gif3_list = gif2list(sources_path + 'gif1.gif', 30, 40)
+gif4_list = gif2_list[:]
+gif5_list = gif2list(sources_path + 'gif1.gif', 40, 55)
 
-gif1_list = []
-gif2_list = []
-gif3_list = []
-gif2list(sources_path + 'gif1.gif', gif1_list, 10)
-gif2list(sources_path + 'gif2.gif', gif2_list)
-gif2list(sources_path + 'gif3.gif', gif3_list, 10)
-
-anigif = AnimatedGif(root,delay=0.03)
+anigif = AnimatedGif(root,delay=0.01)
 gif1code = anigif.add(gif1_list)
 gif2code = anigif.add(gif2_list)
 gif3code = anigif.add(gif3_list)
+gif4code = anigif.add(gif4_list)
+gif5code = anigif.add(gif5_list)
 anigif.start()
 root.mainloop()
-time.sleep(5)
-anigif.stop()
 
