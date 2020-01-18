@@ -13,8 +13,9 @@ sources/*                   image sources for the project
 test                        testfiles to check some functions or features of Raspberry Pi
   /libraries/*              symbolic link files of libraries/* for testfiles
   /autostart_led_blink.py   testfile for autostart and led
+  /buzzer.py                testfile for buzzer
   /gif_tk.py                testfile for gif in Tkinter
-  /interact_tk.py           testfile for interaction Tkinter and serial connection
+  /interact_tk_wand.py      testfile for interaction Tkinter and serial connection
   /transparency_tk.py       testfile for displaying transparent gif on Tkinter window
   /weather_tk_hangeul.py    testfile for displaying hangeul on Tkinter window, and web crawler
 
