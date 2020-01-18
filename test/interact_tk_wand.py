@@ -3,7 +3,7 @@
 Title   interact_tk_wand.py
 Author  Kihong Kim (Undergraduate Student, School of Computing, KAIST)
 Made    15-Jan-2020
-Comment This program is test for interaction of Raspberry Pi when tk.Tk().mainloop() is active.
+Comment This program is testfile for interaction of Raspberry Pi when tk.Tk().mainloop() is active.
         Besides, This program test for interaction between tk and wand.
         Required electric circuit is connecting on pin11 for LED, pin8 for TXD, and pin10 for RXD
         of NDmesh module (RF connection module).

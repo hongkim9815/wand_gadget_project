@@ -1,0 +1,1865 @@
+@charset "UTF-8";
+
+/* Incomms WS Part LKK 170911 */
+
+.cs_weather {
+    font-family: "굴림", gulim, AppleSDGothicNeo-Regular, sans-serif;
+    font-size: 12px;
+}
+
+.cs_weather .page_area .paging_bx a[class^=btn_page_] .ico_spr, .cs_weather .pop_box .layer_close .close_btn, .cs_weather .title_sub .sub_option .ico_select, .cs_weather .list_area .wt_status .ico_humidity_bg, .cs_weather .sort_box .lst_select .select_box .btn_select .ico_select, .cs_weather .table_info .list_area .on .item_time .ico_arrow, .cs_weather .table_info .list_area .item_time .tomorrow .tomorrow_icon {
+    background: url(../img/sp_nwearther.png) no-repeat;
+}
+
+.cs_weather .weather_box .lv1 {
+    color: #32a1ff;
+}
+
+.cs_weather .weather_box .lv2 {
+    color: #00a83d;
+}
+
+.cs_weather .weather_box .lv3 {
+    color: #fd9b5a;
+}
+
+.cs_weather .weather_box .lv4 {
+    color: #ff5959;
+}
+
+.cs_weather .weather_box .lv_none {
+    color: #8f8f8f;
+}
+
+.cs_weather .weather_box {
+    position: relative;
+    overflow: hidden;
+    margin-left: 10px;
+    *clear:both;
+}
+
+.cs_weather .weather_area {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e3e8ee;
+}
+
+.cs_weather .section_title {
+    position: relative;
+    clear: both;
+    overflow: hidden;
+    height: 36px;
+    padding: 0 24px;
+    font-size: 12px;
+    line-height: 60px;
+    border-top: 1px solid #eaeef3;
+}
+
+
+/* 공통 서브탭 정렬박스 */
+
+.cs_weather .sort_box {
+    position: relative;
+    padding: 0 23px;
+    height: 40px;
+    z-index: 100;
+}
+
+.cs_weather .sort_box .lst_select {
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+}
+
+.cs_weather .sort_box .lst_select .select_box {
+    display: inline-block;
+    position: relative;
+    height: 40px;
+    line-height: 40px;
+    *display: inline;
+    *zoom: 1;
+}
+
+.cs_weather .sort_box .lst_select .select_box .btn_select {
+    display: inline-block;
+    padding-top: 2px;
+    font-size: 12px;
+    color: #000;
+    font-weight: bold;
+    text-decoration: none;
+    *display: inline;
+    *zoom: 1;
+}
+
+.cs_weather .sort_box .lst_select .select_box .btn_select[role="button"][aria-expanded="true"] {
+    color: #00a83d;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.cs_weather .sort_box .lst_select .select_box .btn_select:hover {
+    text-decoration: none;
+}
+
+.cs_weather .sort_box .lst_select .select_box .btn_select .ico_select {
+    display: inline-block;
+    vertical-align: middle;
+    margin: -2px 0 0 6px;
+    width: 9px;
+    height: 6px;
+    background-position: -17px -43px;
+    *display: inline;
+    *zoom: 1;
+}
+.cs_weather .sort_box .lst_select .select_box span.btn_select .ico_select {
+    display: none;
+}
+
+.cs_weather .sort_box .lst_select .select_box .btn_select[role="button"][aria-expanded="true"] .ico_select {
+    background-position: -17px -34px;
+}
+
+.cs_weather .sort_box .lst_select .select_box .select_lst {
+    display: none;
+    position: absolute;
+    top: 40px;
+    left: 0;
+    padding: 17px 18px 13px 17px;
+    border: 1px solid #bcc8d9;
+    background: #fff;
+    z-index: 100;
+}
+
+.cs_weather .sort_box .lst_select .select_box .btn_select[role="button"][aria-expanded="true"]+.select_lst {
+    display: block;
+}
+
+.cs_weather .sort_box .lst_select .select_box .select_lst li {
+    line-height: 16px;
+}
+
+.cs_weather .sort_box .lst_select .select_box .select_lst li+li {
+    margin-top: 12px;
+}
+
+.cs_weather .sort_box .lst_select .select_box .select_lst li a {
+    font-size: 12px;
+    color: #424242;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.cs_weather .sort_box .lst_select .select_box .select_lst li a:hover {
+    text-decoration: underline;
+}
+
+.cs_weather .sort_box .lst_select .select_box .select_lst li[role="option"][aria-selected="true"] a {
+    color: #00a83d;
+    font-weight: bold;
+}
+
+.cs_weather .sort_box .lst_select .select_box+.select_box {
+    margin-left: 16px;
+}
+
+.cs_weather .sort_box .lst_array_info {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.cs_weather .sort_box .lst_array_info .select_sub {
+    margin-right: 24px;
+    height: 36px;
+    line-height: 36px;
+}
+
+.cs_weather .sort_box .lst_array_info .select_sub ul {
+    overflow: hidden;
+}
+
+.cs_weather .sort_box .lst_array_info .select_sub ul li {
+    float: left;
+    padding-top: 2px;
+}
+
+.cs_weather .sort_box .lst_array_info .select_sub ul li+li {
+    margin-left: 17px;
+}
+
+.cs_weather .sort_box .lst_array_info .select_sub ul li a {
+    text-decoration: none;
+    color: #666;
+}
+
+.cs_weather .sort_box .lst_array_info .select_sub ul li.on a {
+    color: #242424;
+}
+
+.cs_weather .sort_box .lst_array_info .select_sub ul li a .ico_select_sub {
+    display: inline-block;
+    vertical-align: middle;
+    margin: -3px 6px 0 0;
+    width: 6px;
+    height: 6px;
+    background: url(../img/sp_v_con13.png) no-repeat;
+    background-position: -80px -414px;
+    *display: inline;
+    *zoom: 1;
+}
+
+.cs_weather .sort_box .lst_array_info .select_sub ul li.on a .ico_select_sub {
+    background-position: -69px -414px;
+}
+
+.cs_weather .sort_box .lst_array_info .array_date {
+    margin-right: 23px;
+    font-size: 12px;
+    line-height: 36px;
+    color: #8f8f8f;
+    font-weight: normal;
+}
+
+.cs_weather .sort_box .lst_array_info .array_date .array_time {
+    font-family: tahoma;
+}
+
+
+/* 메인 탭 */
+
+.cs_weather .main_tab {
+    position: relative;
+    height: 36px;
+    border: 1px solid #eaeef3;
+    border-width: 1px 0;
+    line-height: 37px;
+    padding: 0px 24px;
+}
+
+.cs_weather .main_tab .list_tab {
+    overflow: hidden;
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+
+.cs_weather .main_tab .list_tab li {
+    display: block;
+    float: left;
+    width: 25%;
+}
+
+.cs_weather .main_tab .list_tab li a {
+    display: block;
+    height: 100%;
+    margin: 0 5px;
+    color: #666;
+    text-decoration: none;
+}
+
+.cs_weather .main_tab .list_tab li a .menu {
+    display: inline-block;
+    position: relative;
+    height: 100%;
+    vertical-align: top;
+}
+
+.cs_weather .main_tab li a .subline {
+    display: block;
+    position: absolute;
+    height: 2px;
+    left: -6px;
+    right: -6px;
+    bottom: 0;
+    background: transparent;
+}
+
+.cs_weather .main_tab .list_tab li[role="tab"][aria-selected="true"] a {
+    font-weight: bold;
+    color: #03a83d;
+}
+
+.cs_weather .main_tab .list_tab li[role="tab"][aria-selected="true"] a .subline {
+    background-color: #03a83d;
+}
+
+
+/* 옵션 탭 */
+
+.cs_weather .title_area {
+    position: relative;
+    overflow: hidden;
+}
+
+.cs_weather .title_area:after {
+    content: "";
+    clear: both;
+    display: block;
+}
+
+.cs_weather .title_sub {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+}
+
+.cs_weather .title_sub .sub_option {
+    overflow: hidden;
+    font-size: 12px;
+    padding-right: 6px;
+}
+
+.cs_weather .title_sub .sub_option .btn_option {
+    float: left;
+    margin-right: 17px;
+    padding-top: 11px;
+    line-height: 42px;
+    color: #666;
+    text-decoration: none;
+}
+
+.cs_weather .title_sub .sub_option .btn_option[role="option"][aria-selected="true"] {
+    color: #242424;
+}
+
+.cs_weather .title_sub .sub_option .ico_select {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-top: -1px;
+    margin-right: 5px;
+    background-position: 0 -27px;
+    vertical-align: 1px;
+}
+
+.cs_weather .title_sub .sub_option [role="option"][aria-selected="true"] .ico_select {
+    background-position: 0 -19px;
+}
+
+
+/* 메인 날씨정보 */
+
+.cs_weather .main_info {
+    float: left;
+    overflow: hidden;
+    width: 344px;
+    padding: 28px 0 25px 32px;
+    *width:340px;
+}
+
+.cs_weather .ico_state {
+    float: left;
+    margin-top: 8px;
+    margin-right: 10px;
+}
+
+.cs_weather .main_info .info_data {
+    float: left;
+    width: 208px;
+}
+
+.cs_weather .main_info .info_temperature {
+    margin-top: -5px;
+    margin-left:2px;
+    color: #242424;
+    letter-spacing: -0.5px;
+}
+
+.cs_weather .main_info .info_temperature .tempmark {
+    font-size: 30px;
+    font-weight: bold;
+    letter-spacing: -0.5px;
+    vertical-align: 16px;
+}
+
+.cs_weather .main_info .info_temperature .todaytemp {
+    font-family: Helvetica;
+    font-size: 56px;
+    font-weight: 500;
+}
+
+.cs_weather .main_info .info_list {
+    position: relative;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.cs_weather .main_info .info_data .info_list li {
+    clear: both;
+    padding: 0;
+    border: none;
+    clear: both;
+    margin: 0 5px 9px;
+    font-size: 12px;
+    color: #242424;
+}
+
+.cs_weather .main_info .info_data .info_list li .cast_txt {
+    font-weight: bold;
+}
+
+.cs_weather .main_info .info_data .info_list li .merge {
+    font-weight: bold;
+}
+
+.cs_weather .main_info .info_data .info_list li .sensible em {
+    font-weight: bold;
+}
+
+.cs_weather .main_info .info_data .info_list li .rainfall em {
+    font-weight: bold;
+    color: #40b8f1;
+}
+
+.cs_weather .main_info .info_data .info_list li .bar {
+    display: inline-block;
+    overflow: hidden;
+    width: 0;
+    height: 11px;
+    margin: -2px 3px 1px 3px;
+    border-left: 1px solid #eaeef4;
+    vertical-align: middle;
+}
+
+.cs_weather .main_info .info_data .info_list li .min {
+    color: #00a1ed;
+}
+
+.cs_weather .main_info .info_data .info_list li .max {
+    color: #f53f3c;
+}
+
+.cs_weather .main_info .info_data .info_list li .slash {
+    font-weight: normal;
+    color: #8f8f8f;
+}
+
+.cs_weather .sub_info {
+    overflow: hidden;
+    width: 212px;
+    padding: 36px 0;
+    *width:204px;
+}
+
+.cs_weather .sub_info .detail_box {
+    float: left;
+    width: 169px;
+    height: 65px;
+    padding: 33px 24px 16px 23px;
+    border-left: 1px solid #f0f3f6;
+    font-size: 12px;
+}
+
+.cs_weather .sub_info .detail_box strong {
+    display: block;
+    width: 50px;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.cs_weather .sub_info .detail_box .ico_state1 {
+    display: block;
+    float: left;
+    margin-top: 4px;
+}
+
+.cs_weather .sub_info .detail_box dl dt {
+    float: left;
+    margin-bottom: 9px;
+    color: #424242;
+}
+
+.cs_weather .sub_info .detail_box dl dt a {
+    color: #424242;
+}
+
+.cs_weather .sub_info .detail_box dl dd {
+    margin-left: 65px;
+    margin-bottom: 9px;
+    font-size: 12px;
+    white-space:nowrap;
+}
+
+.cs_weather .sub_info .detail_box dl dd .num {
+    margin-right: 4px;
+}
+
+.cs_weather .main_info .indicator span .ico, .cs_weather .sub_info .detail_box dl dd .ico {
+    display: inline-block;
+    overflow: hidden;
+    width: 14px;
+    height: 14px;
+    margin: -1px 0 0 5px;
+    background: url(../img/icon_aqi.png) no-repeat;
+    vertical-align: top;
+    padding-left:1px;
+}
+.cs_weather .main_info .indicator span .num{
+    margin-right:4px;
+}
+
+.cs_weather .main_info .indicator span.lv1 .ico, .cs_weather .sub_info .detail_box dl dd.lv1 .ico {
+    background-position: 0 0;
+}
+
+.cs_weather .main_info .indicator span.lv2 .ico, .cs_weather .sub_info .detail_box dl dd.lv2 .ico {
+    background-position: -15px 0;
+}
+
+.cs_weather .main_info .indicator span.lv3 .ico, .cs_weather .sub_info .detail_box dl dd.lv3 .ico {
+    background-position: -30px 0;
+}
+
+.cs_weather .main_info .indicator span.lv4 .ico, .cs_weather .sub_info .detail_box dl dd.lv4 .ico {
+    background-position: -45px 0;
+}
+.cs_weather .main_info .indicator span.lv_none .ico, .cs_weather .sub_info .detail_box dl dd.lv_none .ico {
+    display:none;
+}
+
+.cs_weather .tomorrow_area {
+    position: relative;
+    overflow: hidden;
+}
+
+.cs_weather .tomorrow_area .main_info {
+    position: relative;
+    width: 50%;
+    padding: 28px 0 22px;
+    text-align: center;
+}
+
+.cs_weather .tomorrow_area .main_info .tlt {
+    display: block;
+    margin-bottom: 16px;
+    color: #666;
+    font-weight:normal;
+}
+
+.cs_weather .tomorrow_area .main_info .info_temperature {
+    margin-top: 24px;
+}
+
+.cs_weather .tomorrow_area .main_info .ico_state1 {
+    display: inline-block;
+    margin-top: 0;
+}
+
+.cs_weather .tomorrow_area .info_data {
+    clear: both;
+    float: none;
+    width: auto;
+    margin-top: 10px;
+}
+
+.cs_weather .tomorrow_area .main_info .info_temperature {
+    display: inline-block;
+    margin: -3px 0 0 6px;
+    color: #242424;
+    letter-spacing: -0.5px;
+}
+
+.cs_weather .tomorrow_area .main_info .info_temperature .tempmark {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: -0.5px;
+    vertical-align: 16px;
+}
+
+.cs_weather .tomorrow_area .main_info .info_temperature .todaytemp {
+    font-family: Helvetica;
+    font-size: 50px;
+    font-weight: 500;
+}
+
+.cs_weather .tomorrow_area .bar {
+    position: absolute;
+    width: 0;
+    top: 75px;
+    left: 50%;
+    height: 65px;
+    margin: 0;
+    border-left: 1px solid #eee;
+}
+
+.cs_weather .tomorrow_area .main_info .info_data .info_list li {
+    margin-bottom: 7px;
+}
+
+.cs_weather .tomorrow_area .main_info .info_data .info_list li .indicator a {
+    color: #424242;
+}
+
+.cs_weather .tomorrow_area .main_info .info_data .info_list li .indicator a:hover {
+    text-decoration: underline;
+}
+
+
+/*시간별 날씨*/
+
+.cs_weather .table_info {
+    position: relative;
+    clear: both;
+}
+
+.cs_weather .table_info .graph_area {
+    position: absolute;
+    top: 89px;
+    width: 100%;
+    height: 41px;
+}
+
+.cs_weather .table_info .graph_area .yesterday_line {
+    display: block;
+    position: absolute;
+    top: -30px;
+    left: 52px;
+    font-size: 11px;
+    color: #999;
+}
+
+.cs_weather .table_info .graph_area .dot_line {
+    display: block;
+    position: absolute;
+    top: 16px;
+    left: 11px;
+    border-left: 1px dotted #c5c5c5;
+}
+
+.cs_weather .table_info .list_area {
+    position: relative;
+    overflow: hidden;
+    font-family: '돋움', Dotum, Helvetica, AppleGothic, sans-serif;
+}
+
+.cs_weather .table_info.bytime .list_area {
+    vertical-align: top;
+    padding-top:19px;
+    padding-bottom:7px;
+}
+
+.cs_weather .table_info.bytime .section_title {
+    height: 53px;
+    line-height: 60px;
+}
+
+.cs_weather .table_info .list_area li {
+    position: relative;
+    float: left;
+    width: 12.5%;
+    padding: 0px;
+    text-align: center;
+    font-family: '돋움', Dotum, Helvetica, AppleGothic, sans-serif;
+    vertical-align: top;
+    *width:73px;
+}
+
+.cs_weather .table_info .list_area li dl {
+    text-align: center;
+}
+
+.cs_weather .table_info .list_area li:first-child {
+    border: 0;
+}
+
+.cs_weather .table_info .list_area li.next {
+    border-color: #ebedee;
+}
+
+.cs_weather .table_info .list_area li.on .item_time {
+    font-weight:bold;
+    color:#1ec545;
+}
+
+.cs_weather .table_info .list_area .item_time {
+    height:18px;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    font-size: 11px;
+    color: #666;
+    font-family: '돋움', Dotum, Helvetica, AppleGothic, sans-serif;
+    line-height:18px;
+}
+
+.cs_weather .table_info .list_area .item_time .today {
+    color: #999;
+}
+
+.cs_weather .table_info .list_area .item_time .tomorrow  {
+    display:block;
+    position:absolute;
+    top:-19px;
+}
+
+.cs_weather .table_info .list_area .item_time .tomorrow .tomorrow_icon {
+    position:absolute;
+    display:block;
+    top:0;
+    left:48px;
+    width:37px;
+    height:18px;
+    color: #fff;
+    background-position:-48px -12px;
+    *left:27px;
+}
+.cs_weather .table_info .list_area .last .item_time .tomorrow .tomorrow_icon {
+    left:-9px;
+}
+
+.cs_weather .table_info .list_area .item_time .tomorrow  .division_line {
+    display:block;
+    position:absolute;
+    top:0;
+    left:37px;
+    width:1px;
+    border-left:1px solid #e7e8ea;
+    *left:15px
+}
+
+.cs_weather .table_info .list_area .on .item_time a {
+    display: block;
+    color: #03a73c;
+    font-weight: bold;
+}
+
+.cs_weather .table_info .list_area .on .item_time a:hover, .cs_weather .table_info .list_area .on .item_time a:active {
+    text-decoration: underline;
+}
+
+.cs_weather .table_info .list_area .on .item_time .ico_arrow {
+    display: inline-block;
+    position: relative;
+    width: 5px;
+    height: 7px;
+    margin-left: 4px;
+    background-position: 0 -10px;
+    vertical-align: 0;
+}
+
+.cs_weather .table_info .list_area .dot_point {
+    display: block;
+    margin-top: 2px;
+    margin-left: 5px;
+    width: 5px;
+    height: 5px;
+    background: url(../img/dot_weather.png) no-repeat;
+}
+
+.cs_weather .table_info .list_area .on .dot_point {
+    width: 5px;
+    height: 5px;
+    background: url(../img/green_circle_weather_v2.png) no-repeat;
+}
+
+.cs_weather .table_info .list_area .dot_point.yesterday {
+    display: block;
+    margin-top: 6px;
+    margin-left: 5px;
+    width: 5px;
+    height: 5px;
+    background: none;
+}
+
+.cs_weather .table_info .list_area .dot_point.first, .cs_weather .table_info .list_area .dot_point.last {
+    display: block;
+    margin-top: 6px;
+    margin-left: 5px;
+    width: 5px;
+    height: 5px;
+    background: url(../img/gray_dot_weather.png) no-repeat;
+}
+
+.cs_weather .table_info .list_area .weather_item {
+    position: absolute;
+    left: 50%;
+    margin-left: -7px;
+    font-size: 10px;
+    color: #333;
+    font-family: tahoma;
+    font-weight: normal;
+}
+
+.cs_weather .table_info .list_area .weather_item>span {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.cs_weather .table_info .list_area .weather_item.max {
+    color: #f23c3c;
+}
+
+.cs_weather .table_info .list_area .weather_item.min, .cs_weather .table_info .list_area .ta_ra.high {
+    color: #259cef;
+}
+
+.cs_weather .table_info .list_area .ta_ra {
+    margin-bottom: 17px;
+    font-size: 11px;
+    color: #333;
+}
+
+.cs_weather .table_info .list_area .item_condition {
+    margin-top: 62px;
+}
+
+.cs_weather .table_info .info_list.rainfall .list_area .item_condition {
+    margin-top: 71px;
+}
+
+.cs_weather .table_info .ico.dday {
+    display: inline-block;
+    height:18px;
+    line-height: 18px;
+    background: url(../img/btn_dday.png) 0 0 no-repeat;
+    text-indent: 0;
+}
+
+.cs_weather .table_info .ico.dday .dday {
+    display: inline-block;
+    height:18px;
+    line-height: 20px;
+    background: url(../img/btn_dday.png) 100% 0 no-repeat;
+    margin-left: 7px;
+    padding-right: 7px;
+    color: #fff!important;
+    font-size: 11px;
+    font-weight: bold;
+    vertical-align: top;
+}
+
+.cs_weather .table_info.weekly .ico.dday {
+    margin-left:2px;
+}
+
+.cs_weather .table_info.weekly .ico.dday .dday {
+    letter-spacing:-1px;
+    vertical-align: 1px;
+    padding-right:9px;
+}
+
+/* 강수정보 */
+
+.cs_weather .table_info .info_list.rainfall .list_area li .item_condition .rain_rate {
+    display: block;
+    width: 72.5px;
+    height:20px;
+    margin-left: 39px;
+    font-size: 11px;
+    line-height: 21px;
+    color: #057be9;
+}
+
+.cs_weather .table_info .info_list.rainfall .list_area li.merge2 .item_condition .rain_rate {
+    width: 146px;
+}
+
+.cs_weather .table_info .info_list.rainfall .list_area li.merge0 .item_condition .rain_rate {
+    width: 0;
+}
+
+.cs_weather .table_info .info_list.rainfall .list_area li:first-child .item_condition .rain_rate {
+    margin-left: 36px;
+    width: 75.5px;
+}
+
+.cs_weather .table_info .info_list.rainfall .list_area li:first-child.merge2 .item_condition .rain_rate {
+    width: 149px;
+}
+
+.cs_weather .table_info .info_list.rainfall .list_area .item_condition .rain_rate.level1 {
+    background-color: #e3e5e9;
+    color: #adaeae;
+}
+
+.cs_weather .table_info .info_list.rainfall .list_area .item_condition .rain_rate.level2 {
+    background-color: #dfedf9;
+}
+
+.cs_weather .table_info .info_list.rainfall .list_area .item_condition .rain_rate.level3 {
+    background-color: #cee4f8;
+}
+
+.cs_weather .table_info .info_list.rainfall .list_area .item_condition .rain_rate.level4 {
+    background-color: #b8d9f7;
+}
+
+.cs_weather .table_info .info_list.rainfall .list_area .item_condition .rain_rate.level5 {
+    background-color: #98c9f6;
+}
+
+.cs_weather .table_info .info_list.rainfall .list_area .item_time {
+    margin-top:5px;
+}
+/* 습도정보 */
+
+.cs_weather .table_info .info_list.humidity .list_area .wt_status {
+    display: block;
+    position: relative;
+    width: 30px;
+    height: 30px;
+    margin: 0 auto;
+}
+
+.cs_weather .table_info .info_list.humidity .list_area .wt_status .ico_humidity {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.cs_weather .table_info .info_list.humidity .list_area .wt_status .ico_humidity .percent {
+    display: block;
+    overflow: hidden;
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    right: 0;
+    height: 23px;
+}
+
+.cs_weather .table_info .info_list.humidity .list_area .wt_status .ico_humidity .percent i {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #c2ebff;
+    font-size: 0;
+    color: transparent;
+    line-height: 0;
+}
+
+.cs_weather .table_info .info_list.humidity .list_area .wt_status .ico_humidity_bg {
+    position: absolute;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    background-position: 0 -53px;
+}
+
+
+/* 바람정보 */
+
+.cs_weather .table_info .info_list.wind .list_area .wt_status {
+    display: inline-block;
+    overflow: hidden;
+    width: 30px;
+    height: 30px;
+    font-size: 1px;
+    line-height: 1px;
+    color: transparent;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+.cs_weather .wt_status .ico_wind {
+    display: block;
+    width: 24px;
+    height: 24px;
+    background: url(../img/sp_arrow.png) no-repeat;
+    margin: 3px 3px;
+}
+
+.cs_weather .wt_status .ico_wind.wind_s {
+    background-position: -48px 0;
+}
+
+
+/* 남풍 */
+
+.cs_weather .wt_status .ico_wind.wind_ssw {
+    background-position: -72px 0;
+}
+
+
+/* 남남서풍 */
+
+.cs_weather .wt_status .ico_wind.wind_sw {
+    background-position: -96px 0;
+}
+
+
+/* 남서풍 */
+
+.cs_weather .wt_status .ico_wind.wind_wsw {
+    background-position: -96px -24px;
+}
+
+
+/* 서남서풍 */
+
+.cs_weather .wt_status .ico_wind.wind_w {
+    background-position: -96px -48px;
+}
+
+
+/* 서풍 */
+
+.cs_weather .wt_status .ico_wind.wind_wnw {
+    background-position: -96px -72px;
+}
+
+
+/* 서북서풍 */
+
+.cs_weather .wt_status .ico_wind.wind_nw {
+    background-position: -96px -96px;
+}
+
+
+/* 북서풍 */
+
+.cs_weather .wt_status .ico_wind.wind_nnw {
+    background-position: -72px -96px;
+}
+
+
+/* 북북서풍 */
+
+.cs_weather .wt_status .ico_wind.wind_n {
+    background-position: -48px -96px;
+}
+
+
+/* 북풍 */
+
+.cs_weather .wt_status .ico_wind.wind_nne {
+    background-position: -24px -96px;
+}
+
+
+/* 북북동풍 */
+
+.cs_weather .wt_status .ico_wind.wind_ne {
+    background-position: 0 -96px;
+}
+
+
+/* 북동풍 */
+
+.cs_weather .wt_status .ico_wind.wind_ene {
+    background-position: 0 -72px;
+}
+
+
+/* 동북동풍 */
+
+.cs_weather .wt_status .ico_wind.wind_e {
+    background-position: 0 -48px;
+}
+
+
+/* 동풍 */
+
+.cs_weather .wt_status .ico_wind.wind_ese {
+    background-position: 0 -24px;
+}
+
+
+/* 동남동풍 */
+
+.cs_weather .wt_status .ico_wind.wind_se {
+    background-position: 0 0;
+}
+
+
+/* 남동풍 */
+
+.cs_weather .wt_status .ico_wind.wind_sse {
+    background-position: -26px 0;
+}
+
+
+/* 남남동풍 */
+
+.cs_weather .wt_status .ico_wind.wind_none {
+    background-position: -48px -48px;
+}
+
+
+/* 무풍 */
+
+
+/*주간날씨*/
+
+.cs_weather .table_info.weekly {
+    margin: 0;
+}
+
+.cs_weather .table_info.weekly .list_area li {
+    width: 117px;
+    margin: 19px 0 18px;
+    border-left: 1px solid #f0f3f6;
+    *width:105px;
+}
+
+.cs_weather .table_info.weekly .list_area li:first-child {
+    width: 116px;
+    border: 0;
+}
+
+.cs_weather .table_info.weekly .list_area li img {
+    display: block;
+    margin: 0 auto 7px;
+}
+
+.cs_weather .table_info.weekly .list_area li .day_info {
+    display: block;
+    margin-top: -1px;
+    margin-bottom: 12px;
+    line-height: 21px;
+    padding-top:2px;
+}
+
+.cs_weather .table_info.weekly .list_area li.day_off {
+    color: #f23c3c;
+}
+
+.cs_weather .table_info.weekly .list_area li dl {
+    padding-top: 7px;
+    padding-bottom: 1px;
+}
+
+.cs_weather .table_info.weekly .list_area li dd {
+    font-family: tahoma;
+    font-weight: bold;
+    color: #424242;
+}
+
+.cs_weather .table_info.weekly .list_area li dd .slash {
+    font-weight: normal;
+}
+
+.cs_weather .table_info.weekly .list_area .point_time {
+    display: block;
+}
+
+.cs_weather .table_info.weekly .list_area .item_condition .item_condition_more {
+    display: block;
+    font-size: 12px;
+    font-weight: normal;
+    color: #000;
+}
+
+.cs_weather .table_info.weekly .list_area li .day_info span {
+    color: #8f8f8f;
+    font-size:11px;
+}
+
+.cs_weather .table_info.weekly .list_area li .point_time {
+    margin-bottom: 8px;
+}
+
+.cs_weather .table_info.weekly .list_area li .rain_rate {
+    display: inline-block;
+    height: 30px;
+    margin-left: 7px;
+    line-height: 34px;
+    color: #8f8f8f;
+    vertical-align: top;
+}
+
+.cs_weather .table_info.weekly .list_area li .rain_rate.wet {
+    color: #41b5ee;
+}
+
+
+/*월간날씨*/
+
+.cs_weather .monthly_area .main_info {
+    position: relative;
+    display: table;
+    overflow: visible;
+    width: auto;
+    padding: 21px 23px 18px;
+}
+
+.cs_weather .monthly_area .main_info .sort_box {
+    display: table-cell;
+    width: 83px;
+    padding: 0;
+    text-align: center;
+    vertical-align: middle;
+    z-index: 90;
+}
+
+.cs_weather .monthly_area .main_info .sort_box .main_tlt {
+    padding: 0;
+}
+
+.cs_weather .monthly_area .main_info .forecast {
+    display: block;
+    overflow: hidden;
+    line-height: 20px;
+    color: #242424;
+}
+
+.cs_weather .monthly_area .main_info .average {
+    display: block;
+    overflow: hidden;
+    margin-top: 3px;
+}
+
+.cs_weather .monthly_area .main_info .average .tit {
+    color: #8f8f8f;
+    margin-right: 8px;
+}
+
+.cs_weather .monthly_area .main_info .average .bar {
+    display: inline-block;
+    overflow: hidden;
+    width: 0;
+    height: 11px;
+    margin: -1px 7px 1px 6px;
+    border-left: 1px solid #e8e8e8;
+    vertical-align: middle;
+}
+
+.cs_weather .monthly_area .main_select_tab .main_tlt select {
+    width: 60px;
+}
+
+
+/* 주간전망 */
+
+.cs_weather .table_info.monthly {
+    margin: 0 23px 24px;
+}
+
+.cs_weather .weekly_prospect {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-weight: normal;
+    color: #242424;
+    line-height: 20px;
+    text-align: center;
+    word-break: break-all;
+}
+
+.cs_weather .weekly_prospect .explain {
+    display: block;
+    color: #8f8f8f;
+}
+
+.cs_weather .weekly_prospect .td1 {
+    width: 82px;
+}
+
+.cs_weather .weekly_prospect .td2 {
+    width: 273px;
+}
+
+.cs_weather .weekly_prospect .td3 {
+    width: 82px;
+}
+
+.cs_weather .weekly_prospect .td4 {
+    width: 98px;
+}
+
+.cs_weather .weekly_prospect thead th {
+    border: 1px solid #eaeef4;
+    border-width: 1px 0 1px 1px;
+    padding: 8px 0 8px;
+    line-height: 20px;
+    font-weight: normal;
+    background:#f9fafc;
+    color:#777;
+}
+
+.cs_weather .weekly_prospect thead th:first-child {
+    border-left: 0;
+}
+
+.cs_weather .weekly_prospect tbody th {
+    border: 1px solid #eaeef4;
+    border-width: 0 0 1px 1px;
+    padding: 15px 15px 12px;
+    line-height: 20px;
+    font-weight: normal;
+}
+
+.cs_weather .weekly_prospect tbody th:first-child {
+    border-left: 0;
+}
+
+.cs_weather .weekly_prospect td {
+    border: 1px solid #eaeef4;
+    border-width: 0 0 1px 1px;
+    padding: 15px 15px 12px;
+}
+
+.cs_weather .weekly_prospect td:first-child {
+    border-left: 0;
+}
+
+.cs_weather .weekly_prospect td p {
+    text-align: left;
+}
+
+
+/* 안내 문구 */
+
+
+/* 안내문구 및 제공 */
+
+.cs_weather .guide_bx {
+    padding: 0 20px 14px 0;
+    border-bottom: 1px solid #f0f3f6;
+    font-size: 11px;
+    line-height: 17px;
+    font-family: '돋움', Dotum, Helvetica, AppleGothic, Sans-serif;
+    color: #8f8f8f;
+}
+
+.cs_weather .guide_bx .guide {
+    position:relative;
+    overflow: hidden;
+    margin-top: 16px;
+    padding-left:9px;
+    font-size: 11px;
+    color: #8f8f8f;
+}
+
+.cs_weather .guide_bx .guide .ico_notice{
+    position:absolute;
+    top:2px;
+    left:0;
+    bottom:5px;
+    display:block;
+    border-left:2px solid #e8e8e8;
+}
+
+.cs_weather .guide_bx .guide .offer {
+    padding-left: 0;
+}
+
+.cs_weather .guide_bx .offer {
+    display: block;
+    padding: 1px 0 0 21px;
+}
+
+.cs_weather .guide_bx .offer a {
+    text-decoration: none;
+}
+
+.cs_weather .guide_bx .offer a:hover {
+    text-decoration: underline;
+}
+
+.cs_weather .guide_bx .offer .update {
+    letter-spacing: 0;
+}
+
+.cs_weather .guide_bx .ico_bar{
+    display: inline-block;
+    vertical-align: top;
+    margin: 2px 7px 0 6px;
+    width: 1px;
+    height: 10px;
+    background-color: #eaeaea;
+}
+
+
+/* 관련정보 */
+
+.cs_weather .other_lk {
+    padding: 15px 0 4px;
+    clear: both;
+    line-height: 19px;
+}
+
+.cs_weather .other_lk dt {
+    float: left;
+    margin-right: 7px;
+    font-weight: bold;
+    color: #444!important;
+}
+
+.cs_weather .other_lk dd {
+    overflow: hidden;
+    color: #666;
+}
+
+.cs_weather .other_lk dd a {
+    text-decoration: none;
+}
+
+.cs_weather .other_lk dd a:hover {
+    text-decoration: underline;
+}
+
+.cs_weather .guide+.other_lk {
+    border-top: 1px solid #f0f0f0;
+}
+
+
+/* 페이징 */
+
+.cs_weather .page_area {
+    margin-bottom: 24px;
+}
+
+.cs_weather .table_info.bytime .page_area {
+    margin-bottom: 22px;
+}
+
+.cs_weather .page_area .paging_bx {
+    line-height: 19px;
+    text-align: center;
+}
+
+.cs_weather .page_area .paging_bx strong a{
+    display:inline-block;
+    width:10px;
+    height:20px;
+    vertical-align:top;
+    text-decoration:none;
+    color:#ccc;
+}
+.cs_weather .page_area .paging_bx strong a.on{
+    color:#00ab33;
+}
+
+
+.cs_weather .page_area .paging_bx a[class^=btn_page_] {
+    display: inline-block;
+    margin-right: -2px;
+    border: 1px solid #e7e7e7;
+    background-color: #fff;
+    vertical-align: middle;
+    cursor: default;
+}
+
+.cs_weather .page_area .paging_bx a[class^=btn_page_] .ico_spr {
+    display: block;
+    margin: 5px 6px 5px 7px;
+    color: transparent;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: default;
+}
+
+.cs_weather .page_area .paging_bx a[class^=btn_page_] .prev {
+    width: 1px;
+    height: 8px;
+    padding-left: 4px;
+    background-position: -21px 0;
+    vertical-align: top;
+}
+
+.cs_weather .page_area .paging_bx a[class^=btn_page_] .next {
+    width: 1px;
+    height: 8px;
+    padding-left: 4px;
+    background-position: 0 0;
+    vertical-align: top;
+}
+
+.cs_weather .page_area .paging_bx a.on[class^=btn_page_] {
+    cursor: pointer;
+}
+
+.cs_weather .page_area .paging_bx a.on[class^=btn_page_] .prev {
+    width: 1px;
+    height: 8px;
+    padding-left: 4px;
+    background-position: -35px 0;
+    vertical-align: top;
+}
+
+.cs_weather .page_area .paging_bx a.on[class^=btn_page_] .next {
+    width: 1px;
+    height: 8px;
+    padding-left: 4px;
+    background-position: -14px 0;
+    vertical-align: top;
+}
+
+.cs_weather .page_area .paging_bx a.on[class^=btn_page_]:hover .prev {
+    width: 1px;
+    height: 8px;
+    padding-left: 4px;
+    background-position: -28px 0;
+    vertical-align: top;
+}
+
+.cs_weather .page_area .paging_bx a.on[class^=btn_page_]:hover .next {
+    width: 1px;
+    height: 8px;
+    padding-left: 4px;
+    background-position: -7px 0;
+    vertical-align: top;
+}
+
+.cs_weather .page_area .paging_bx .page_number {
+    display: inline-block;
+    min-width: 40px;
+    margin: 1px 0 -1px;
+    font-size: 11px;
+    color: #ccc;
+    vertical-align: middle;
+}
+
+.cs_weather .page_area .paging_bx .page_number>strong{
+    padding:0;
+}
+.cs_weather .page_area .paging_bx .page_number>strong:first-child{
+    padding:0;
+}
+
+.cs_weather .page_area .paging_bx .page_number .current {
+    color: #00ab33;
+}
+
+.cs_weather .page_area .paging_bx .page_number .total {
+    color: #777;
+}
+
+
+/* 공통 팝업 */
+
+.cs_weather .pop_box {
+    display: none;
+    overflow: hidden;
+    position: absolute;
+    width: 231px;
+    padding: 23px 8px 24px;
+    background: #fff;
+    border: 1px solid #cbdeee;
+    -webkit-box-shadow: 0 2px 3px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.06);
+    z-index: 150;
+}
+
+.cs_weather .pop_box .layer_close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0;
+    font-size: 0;
+    border: 0;
+    background: #fff;
+    cursor: pointer;
+}
+
+.cs_weather .pop_box .layer_close .close_btn {
+    display: inline-block;
+    overflow: hidden;
+    color: transparent;
+    white-space: nowrap;
+    width: 1px;
+    height: 14px;
+    margin: 12px;
+    padding-left: 13px;
+    background-position: 0 -36px;
+}
+
+.cs_weather .pop_box .tit {
+    margin-left: 19px;
+    color: #424242;
+}
+
+.cs_weather .pop_box .list_area li {
+    float: left;
+    width: 111px;
+    margin-top: 16px;
+    border-left: 1px solid #eaeef3;
+    text-align: center;
+}
+
+.cs_weather .pop_box .list_area li:first-child {
+    border: 0;
+}
+
+.cs_weather .pop_box .list_area li img {
+    display: block;
+    margin: 0 auto 7px;
+}
+
+.cs_weather .pop_box .list_area li .day_info {
+    display: block;
+    margin-top: -3px;
+    margin-bottom: 4px;
+    font-size: 11px;
+    line-height: 18px;
+}
+
+.cs_weather .pop_box .weather_condition .list_area .cast_txt {
+    margin-top: 5px;
+}
+
+.cs_weather .pop_box .list_area .cast_txt {
+    display: block;
+    margin-bottom: 5px;
+    color: #424242;
+}
+
+.cs_weather .pop_box .list_area .point_time {
+    display: block;
+}
+
+.cs_weather .pop_box .list_area .rain_rate {
+    display: block;
+    margin-bottom: -2px;
+    font-family: '돋움', Dotum, Helvetica, AppleGothic, sans-serif;
+    font-size: 11px;
+    color: #8f8f8f;
+}
+
+.cs_weather .pop_box .list_area li .day_info span {
+    font-family: '돋움', Dotum, Helvetica, AppleGothic, sans-serif;
+    color: #666;
+}
+
+.cs_weather .pop_box .rainfall .list_area li {
+    margin-top: 20px;
+}
+
+.cs_weather .pop_box .rainfall .list_area .day_info {
+    margin-bottom: 13px;
+}
+
+.cs_weather .pop_box .rainfall .list_area .rain_rate {
+    font-size: 10px;
+    font-family: tahoma;
+    color: #000;
+}
+
+.cs_weather .pop_box .rainfall .list_area .rain_rate .num {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.cs_weather .pop_box .rainfall .list_area .cast_txt {
+    margin-bottom: 10px;
+    color: #000;
+}
+
+.cs_weather .pop_box .humidity .list_area li .humidity_rate {
+    font-family: tahoma;
+    color: #000;
+    font-size: 10px;
+}
+
+.cs_weather .pop_box .humidity .list_area li .humidity_rate .num {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.cs_weather .pop_box .humidity .list_area .wt_status {
+    display: block;
+    position: relative;
+    width: 30px;
+    height: 30px;
+    margin: 0 auto;
+}
+
+.cs_weather .pop_box .humidity .list_area .wt_status .ico_humidity {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.cs_weather .pop_box .humidity .list_area .wt_status .ico_humidity .percent {
+    display: block;
+    overflow: hidden;
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    right: 0;
+    height: 23px;
+}
+
+.cs_weather .pop_box .humidity .list_area .wt_status .ico_humidity .percent i {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #c2ebff;
+    font-size: 0;
+    color: transparent;
+    line-height: 0;
+}
+
+.cs_weather .pop_box .humidity .list_area .wt_status .ico_humidity_bg {
+    position: absolute;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    background-position: 0 -53px;
+}
+
+.cs_weather .pop_box .wind .list_area .wt_status {
+    display: inline-block;
+    overflow: hidden;
+    width: 30px;
+    height: 30px;
+    font-size: 1px;
+    color: transparent;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+.cs_weather .pop_box .wind .list_area .wind_speed {
+    font-family: tahoma;
+    color: #000;
+    font-size: 11px;
+}
+
+.cs_weather .pop_box .wind .list_area .wind_speed .num {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+
+/* 아이콘 112X112 */
+
+.cs_weather .ico_state {
+    display: block;
+    width: 112px;
+    height: 112px;
+    background: url(../img/sp_wt_status_112.png) no-repeat;
+    background-size: 672px 590px;
+    -webkit-background-size: 672px 590px;
+}
+
+.cs_weather .ico_state.ws1{background-position:0 0;} /*맑음(낮)*/
+.cs_weather .ico_state.ws2{background-position:-113px 0;} /*맑음(밤)*/
+.cs_weather .ico_state.ws3{background-position:-225px 0;} /*구름조금(낮)*/
+.cs_weather .ico_state.ws4{background-position:-337px 0;} /*구름조금(밤)*/
+.cs_weather .ico_state.ws5{background-position:-449px 0;} /*구름많음(낮)*/
+.cs_weather .ico_state.ws6{background-position:-561px 0;} /*구름많음(밤)*/
+.cs_weather .ico_state.ws7{background-position:0 -123px;} /*흐림*/
+.cs_weather .ico_state.ws8{background-position:-113px -123px;} /*약한비*/
+.cs_weather .ico_state.ws9{background-position:-225px -123px;} /*비*/
+.cs_weather .ico_state.ws10{background-position:-337px -123px;} /*강한비*/
+.cs_weather .ico_state.ws11{background-position:-449px -123px;} /*약한눈*/
+.cs_weather .ico_state.ws12{background-position:-561px -123px;} /*눈*/
+.cs_weather .ico_state.ws13{background-position:0 -235px;} /*강한눈*/
+.cs_weather .ico_state.ws14{background-position:-113px -235px;} /*진눈깨비*/
+.cs_weather .ico_state.ws15{background-position:-225px -235px;} /*소나기*/
+.cs_weather .ico_state.ws16{background-position:-337px -235px;} /*소낙 눈*/
+.cs_weather .ico_state.ws17{background-position:-449px -235px;} /*안개*/
+.cs_weather .ico_state.ws18{background-position:-561px -235px;} /*번개,뇌우*/
+.cs_weather .ico_state.ws19{background-position:0 -357px;} /*우박*/
+.cs_weather .ico_state.ws20{background-position:-113px -357px;} /*황사*/
+.cs_weather .ico_state.ws21{background-position:-225px -357px;} /*비 또는 눈*/
+.cs_weather .ico_state.ws22{background-position:-337px -357px;} /*가끔 비*/
+.cs_weather .ico_state.ws23{background-position:-449px -357px;} /*가끔 눈*/
+.cs_weather .ico_state.ws24{background-position:-561px -357px;} /*가끔 비 또는 눈*/
+.cs_weather .ico_state.ws25{background-position:0 -479px;} /*흐린 후 갬*/
+.cs_weather .ico_state.ws26{background-position:-113px -479px;} /*뇌우 후 갬*/
+.cs_weather .ico_state.ws27{background-position:-225px -479px;} /*비 후 갬*/
+.cs_weather .ico_state.ws28{background-position:-337px -479px;} /*눈 후 갬*/
+.cs_weather .ico_state.ws29{background-position:-449px -479px;} /*흐려져 비*/
+.cs_weather .ico_state.ws30{background-position:-561px -479px;} /*흐려져 눈*/
+
+
+
+
+
+
+/* 아이콘 54X54 */
+
+.cs_weather .ico_state1 {
+    display: inline-block;
+    overflow: hidden;
+    width: 54px;
+    height: 54px;
+    background: url(../img/sp_wt_status_54.png) no-repeat;
+    background-size: 324px 284px;
+    -webkit-background-size: 324px 284px;
+    font-size: 1px;
+    color: transparent;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+.cs_weather .ico_state1.ws1{background-position:0 0;} /*맑음(낮)*/
+.cs_weather .ico_state1.ws2{background-position:-54px 0;} /*맑음(밤)*/
+.cs_weather .ico_state1.ws3{background-position:-108px 0;} /*구름조금(낮)*/
+.cs_weather .ico_state1.ws4{background-position:-162px 0;} /*구름조금(밤)*/
+.cs_weather .ico_state1.ws5{background-position:-216px 0;} /*구름많음(낮)*/
+.cs_weather .ico_state1.ws6{background-position:-270px 0;} /*구름많음(밤)*/
+.cs_weather .ico_state1.ws7{background-position:0 -57px;} /*흐림*/
+.cs_weather .ico_state1.ws8{background-position:-54px -57px;} /*약한비*/
+.cs_weather .ico_state1.ws9{background-position:-108px -57px;} /*비*/
+.cs_weather .ico_state1.ws10{background-position:-162px -57px;} /*강한비*/
+.cs_weather .ico_state1.ws11{background-position:-216px -57px;} /*약한눈*/
+.cs_weather .ico_state1.ws12{background-position:-270px -57px;} /*눈*/
+.cs_weather .ico_state1.ws13{background-position:0 -115px;} /*강한눈*/
+.cs_weather .ico_state1.ws14{background-position:-54px -115px;} /*진눈깨비*/
+.cs_weather .ico_state1.ws15{background-position:-108px -115px;} /*소나기*/
+.cs_weather .ico_state1.ws16{background-position:-162px -115px;} /*소낙 눈*/
+.cs_weather .ico_state1.ws17{background-position:-216px -115px;} /*안개*/
+.cs_weather .ico_state1.ws18{background-position:-270px -115px;} /*번개,뇌우*/
+.cs_weather .ico_state1.ws19{background-position:0 -173px;} /*우박*/
+.cs_weather .ico_state1.ws20{background-position:-54px -173px;} /*황사*/
+.cs_weather .ico_state1.ws21{background-position:-108px -173px;} /*비 또는 눈*/
+.cs_weather .ico_state1.ws22{background-position:-162px -173px;} /*가끔 비*/
+.cs_weather .ico_state1.ws23{background-position:-216px -173px;} /*가끔 눈*/
+.cs_weather .ico_state1.ws24{background-position:-270px -173px;} /*가끔 비 또는 눈*/
+.cs_weather .ico_state1.ws25{background-position:0 -230px;} /*흐린 후 갬*/
+.cs_weather .ico_state1.ws26{background-position:-54px -230px;} /*뇌우 후 갬*/
+.cs_weather .ico_state1.ws27{background-position:-108px -230px;} /*비 후 갬*/
+.cs_weather .ico_state1.ws28{background-position:-162px -230px;} /*눈 후 갬*/
+.cs_weather .ico_state1.ws29{background-position:-216px -230px;} /*흐려져 비*/
+.cs_weather .ico_state1.ws30{background-position:-270px -230px;} /*흐려져 눈*/
+
+/* 아이콘 30X30 */
+
+.cs_weather .ico_state2 {
+    display: inline-block;
+    overflow: hidden;
+    width: 30px;
+    height: 30px;
+    background: url(../img/sp_wt_status_30.png) no-repeat;
+    background-size: 205px 170px;
+    -webkit-background-size: 205px 170px;
+    font-size: 1px;
+    color: transparent;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+.cs_weather .ico_state2.ws1 {
+    background-position: 0 0;
+}
+
+.cs_weather .ico_state2.ws1{background-position:0 0;} /*맑음(낮)*/
+.cs_weather .ico_state2.ws2{background-position:-35px 0;} /*맑음(밤)*/
+.cs_weather .ico_state2.ws3{background-position:-70px 0;} /*구름조금(낮)*/
+.cs_weather .ico_state2.ws4{background-position:-105px 0;} /*구름조금(밤)*/
+.cs_weather .ico_state2.ws5{background-position:-140px 0;} /*구름많음(낮)*/
+.cs_weather .ico_state2.ws6{background-position:-175px 0;} /*구름많음(밤)*/
+.cs_weather .ico_state2.ws7{background-position:0 -35px;} /*흐림*/
+.cs_weather .ico_state2.ws8{background-position:-35px -35px;} /*약한비*/
+.cs_weather .ico_state2.ws9{background-position:-70px -35px;} /*비*/
+.cs_weather .ico_state2.ws10{background-position:-105px -35px;} /*강한비*/
+.cs_weather .ico_state2.ws11{background-position:-140px -35px;} /*약한눈*/
+.cs_weather .ico_state2.ws12{background-position:-175px -35px;} /*눈*/
+.cs_weather .ico_state2.ws13{background-position:0 -70px;} /*강한눈*/
+.cs_weather .ico_state2.ws14{background-position:-35px -70px;} /*진눈깨비*/
+.cs_weather .ico_state2.ws15{background-position:-70px -70px;} /*소나기*/
+.cs_weather .ico_state2.ws16{background-position:-105px -70px;} /*소낙 눈*/
+.cs_weather .ico_state2.ws17{background-position:-140px -70px;} /*안개*/
+.cs_weather .ico_state2.ws18{background-position:-175px -70px;} /*번개,뇌우*/
+.cs_weather .ico_state2.ws19{background-position:0 -105px;} /*우박*/
+.cs_weather .ico_state2.ws20{background-position:-35px -105px;} /*황사*/
+.cs_weather .ico_state2.ws21{background-position:-70px -105px;} /*비 또는 눈*/
+.cs_weather .ico_state2.ws22{background-position:-105px -105px;} /*가끔 비*/
+.cs_weather .ico_state2.ws23{background-position:-140px -105px;} /*가끔 눈*/
+.cs_weather .ico_state2.ws24{background-position:-175px -105px;} /*가끔 비 또는 눈*/
+.cs_weather .ico_state2.ws25{background-position:0 -140px;} /*흐린 후 갬*/
+.cs_weather .ico_state2.ws26{background-position:-35px -140px;} /*뇌우 후 갬*/
+.cs_weather .ico_state2.ws27{background-position:-70px -140px;} /*비 후 갬*/
+.cs_weather .ico_state2.ws28{background-position:-105px -140px;} /*눈 후 갬*/
+.cs_weather .ico_state2.ws29{background-position:-140px -140px;} /*흐려져 비*/
+.cs_weather .ico_state2.ws30{background-position:-175px -140px;} /*흐려져 눈*/
