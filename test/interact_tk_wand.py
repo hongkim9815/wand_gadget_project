@@ -24,9 +24,6 @@ import RPi.GPIO as GPIO
 import tkinter as tk
 import time
 from libraries.wandlib import read_serial, print_data_enc, data2point, setVerbose, getAction
-from multiprocessing import Pool, Queue
-
-VERBOSE = True
 
 GPIO.setwarnings(False)                      # Ignore any warning
 GPIO.setmode(GPIO.BOARD)                    # Use physical pin numbering system (40pin) on the board
@@ -39,7 +36,6 @@ root['bg'] = 'white'
 sources_path = "../sources/"
 
 setVerbose(True)
-
 
 
 # ================================================================================

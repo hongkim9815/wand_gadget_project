@@ -1,41 +1,31 @@
 #!/usr/bin/python3
 """
-Title   main.py
+Title   thread_tk_wand.py
 Author  Kihong Kim (Undergraduate Student, School of Computing, KAIST)
-Made    17-Jan-2020 (cloned from test/interact_tk_wand.py)
-Comment This program is a main file of the project.
+Made    18-Jan-2020
+Comment This program is testfile for thread based programming for wand and animated GIF.
         Required electric circuit is connecting on pin11 for LED, pin8 for TXD, and pin10 for RXD
         of NDmesh module (RF connection module).
-Usage   NOT IMPLEMENTED
+        Also, you need a wand for the test.
+        Test process:
+            Just execute this program.
 """
 
-import RPi.GPIO as GPIO
 import tkinter as tk
-import time
 from libraries.wandlib import read_serial, print_data_enc, data2point, setVerbose, getAction
-from multiprocessing import Pool, Queue
-
-VERBOSE = True
-
-GPIO.setwarnings(False)                     # Ignore any warning
-GPIO.setmode(GPIO.BOARD)                    # Use physical pin numbering system (40pin) on the board
-GPIO.setup(11, GPIO.OUT, initial=GPIO.LOW)
+from multiprocessing import Process, Queue
 
 root = tk.Tk()
 root.geometry('1024x768')
 root['bg'] = 'white'
 
-sources_path = "sources/"
+sources_path = "../sources/"
 
 setVerbose(True)
 
 ser = None
 gif1 = []
 gif2 = []
-
-# ================================================================================
-# Utils
-# ================================================================================
 
 def gcd(a, b):
     while b is not 0:
@@ -62,9 +52,6 @@ def gif2list(filename, minf=0, maxf=9999):
     return retlist
 
 
-# ================================================================================
-# AnimatedGifs Class
-# ================================================================================
 
 class AnimatedGifs:
     def __init__(self, root, delay=0.04):
@@ -146,12 +133,13 @@ class AnimatedGifs:
             self.root.after(int(self.delay * 1000), self._animate)
 
 
-def wand_data_process(root, ser, points):
-    ser, data = read_serial(ser)
-    global gif1code
-    global gif2code
-    global cnt
-    # print(points)
+def process_serial(ser, que):
+    print("PRINTTEST")
+    ser, data = read_serial(None)
+    if len(str(data)) > 4:
+        print_data_enc(data)
+    que.put([str(data), ser])
+
     if len(str(data)) > 4 and data[0] is 0x02:
         data_enc = print_data_enc(data)
         points.extend(data2point(data_enc['data_rest']))
@@ -164,66 +152,30 @@ def wand_data_process(root, ser, points):
     else:
         print("Serial does not detect any signal.")
 
-    if cnt > 6:
-        print("CNT DOUBLE ON")
-        if cnt is 7:
-            print("ON!")
-            gif1code = anigif.add(gif1, (800, 200), cycle=2)
-            anigif.delete(gif2code)
-    elif cnt > 3:
-        print("CNT ON!: " + str(cnt))
-        if cnt is 4:
-            print("ON!")
-            anigif.delete(gif1code)
-            gif2code = anigif.add(gif2, (500, 200))
-    else:
-        print("wait!: " + str(cnt))
-    cnt+= 1
-    root.after(1000, wand_data_process, root, ser, points)
+cnt = -1
+def tkinter_process_maker(root, p, queue):
+    global cnt
 
+    if cnt is -1:
+        p = Process(target=process_serial, args=(None, queue))
+        p.start()
+        cnt = 3
+    elif cnt is 0:
+        p.join()
 
-def controlMainView(ag, rec, rec_index=-1):
-    global ser
-
-    if not rec:
-        rec_index = ag.add(gif1, (100, 100), cycle=3)
-
-    ser, data = read_serial(ser)
-    if len(str(data)) > 4:
-        if ag.isPlay(rec_index):
-            ag.delete(rec_index)
-        controlSubview1(ag, False)
-    else:
-        ag.root.after(200, controlMainView, ag, True, rec_index)
-
-
-def controlSubview1(ag, rec, rec_index=-1, rec_time=-1):
-    if not rec:
-        rec_index = ag.add(gif2, (200, 200))
-        rec_time = time.time()
-
-    if rec_time + 5 < time.time():
-        ag.delete(rec_index)
-        controlMainView(ag, False)
-    else:
-        ag.root.after(200, controlSubview1, ag, True, rec_index, rec_time)
-
+    cnt -= 1
+    print(queue.get)
+    root.after(100, tkinter_process_maker, root, p, queue)
 
 if __name__ == "__main__":
     gif1 = gif2list(sources_path + 'gif2.gif', 0, 20)
     gif2 = gif2list(sources_path + 'maingif2.gif', 0, 20)
 
-    points = []
-    # root.after(10, wand_data_process, root, ser, points)
-
-    anigif = AnimatedGifs(root, delay=0.04)
+    queue = Queue()
+    anigif = AnimatedGifs(root, delay=0.01)
+    anigif.add(gif1, (100, 100))
     anigif.start()
-    controlMainView(anigif, False)
+    anigif.root.after(100, tkinter_process_maker, anigif.root, None, queue)
+
 
     root.mainloop()
-
-# TODO: - Add more views
-#       - Merge weather view to this code
-#       - Serial Data test
-#       - Threading
-

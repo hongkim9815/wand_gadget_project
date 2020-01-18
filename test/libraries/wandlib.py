@@ -61,7 +61,7 @@ def getAction(wand_uid, points):
 def data_encoding(data):
     data_enc = {}
     data_enc['data_type'] = data[0]
-    data_enc['UNKNOWN_1'] = data[1]
+    data_enc['CDS'] = data[1]
     data_enc['wand_uid'] = int.from_bytes(data[2:4], byteorder='big')
     data_enc['data_rest'] = data[4:]
     return data_enc
@@ -74,7 +74,7 @@ def print_data_enc(data):
         print("DATA:    " + data.hex())
         print("Length:  " + str(len(str(data))))
         print("Start:   " + data[0:1].hex() + "(" + str(data_enc['data_type']) +")")
-        print("???:     " + data[1:2].hex() + "(" + str(data_enc['UNKNOWN_1']) +")")
+        print("Cds:     " + data[1:2].hex() + "(" + str(data_enc['CDS']) +")")
         print("Wand-id: " + data[2:4].hex() + "(" + str(data_enc['wand_uid']) +")")
         print("rest:    " + data[4:].hex())
     return data_enc
