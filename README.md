@@ -43,7 +43,7 @@ All required modules are in _requirements.txt_.
 Although below code is in setup.sh, if you want to use it, type this code in your command line:
 
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 
