@@ -148,10 +148,16 @@ class Stroke:
         B = self.bounding_box()
         new_points = []
         for p in self.points:
-            new_points.append((
-                p[0] * size / B[0],
-                p[1] * size / B[1]
-            ))
+            try:
+                new_points.append((
+                    p[0] * size / B[0],
+                    p[1] * size / B[1]
+                ))
+            except ZeroDivisionError:
+                new_points.append((
+                    p[0] * size / 1,
+                    p[1] * size / 1
+                ))
         self.points = new_points
 
     def bounding_box(self):

@@ -52,28 +52,29 @@ class AnimatedGifs:
         self.gifs = []
         self.gifs_position = []
         self.gifs_cycle = []
+
+        self.gifs_frame = []
         self.cis = []
-        self.max_frame = 1
         self.delay = 1/frame
+        self.size = 0
         self.execute = True
-        self._it = 0
 
     def add(self, giflist, position, cycle=-1):
-        self.max_frame = int(len(giflist) * self.max_frame / _gcd(len(giflist), self.max_frame))
+        self.size += 1
         self.gifs.append(giflist)
         self.gifs_position.append(position)
-        self.gifs_cycle.append(cycle)
+        self.gifs_cycle.append(cycle + 1)
+        self.gifs_frame.append(0)
         self.cis.append(None)
-        return len(self.gifs) - 1
+        return self.size - 1
 
     def delete(self, index):
-        # self.max_frame = ??     # Convension?
         if self.gifs[index] is None or index is -1:
             raise IndexError
         self.gifs[index] = None
         self.gifs_position[index] = None
         self.gifs_cycle[index] = None
-        # self.cis[index] = None  # Done by self._configure()
+        self.gifs_frame[index] = None
 
     def start(self):
         self._animate()
@@ -101,25 +102,26 @@ class AnimatedGifs:
         self.gifs[index] = obj_list
 
     def _configure(self):
-        for i in range(len(self.gifs)):
+        for i in range(self.size):
             if self.gifs[i] is not None:
-                frame4gif = self._it % len(self.gifs[i])
                 self.canvas.delete(self.cis[i])
                 self.cis[i] = self.canvas.create_image(self.gifs_position[i][0],
                                                        self.gifs_position[i][1],
-                                                       image=self.gifs[i][frame4gif])
+                                                       image=self.gifs[i][self.gifs_frame[i]])
             else:
                 self.canvas.delete(self.cis[i])
 
     def _animate(self):
-        self._configure()
-        self._it = (self._it + 1) % self.max_frame
         if self.execute:
             for i in range(len(self.gifs)):
-                if self.gifs[i] is not None and (self._it is 0 or self._it is len(self.gifs[i])):
+                if self.gifs[i] is not None and self.gifs_frame[i] is 0:
                     self.gifs_cycle[i] -= 1
-                if self.gifs_cycle[i] is 0:
-                    self.delete(i)
+                    if self.gifs_cycle[i] is 0:
+                        self.delete(i)
+            self._configure()
+            for i in range(self.size):
+                if self.gifs[i] is not None:
+                    self.gifs_frame[i] = (self.gifs_frame[i] + 1) % len(self.gifs[i])
             self.root.after(int(self.delay * 1000), self._animate)
 
 
