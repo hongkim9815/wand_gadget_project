@@ -1,47 +1,70 @@
-#!/usr/bin/python3
 """
-Title   ultrasonic.py
-Author  Kihong Kim (Undergraduate Student, School of Computing, KAIST)
+Title   ultrasonic_distance.py
+Author  Changmin Lee (Undergraduate Student, College of convergence, DGIST)
 Made    28-Jan-2020
 Comment This program is for testing ultrasonic distance sensor HC-SR04 on Raspberry Pi.
         Required electric circuit is represented in below link:
             https://tutorials-raspberrypi.com/raspberry-pi-ultrasonic-sensor-hc-sr04
         Test process:
             1) Just execute this program.
-
-        - INCOMPLETELY IMPLEMENTED
+        Known failed process:
+            - If an object is too close or too far to measure its distance, the sensor
+             cannot recognize it normally. Also, if an object suddenly appears or disappears
+             from the sensor's recognition range, the sensor does not normally recognize
+             the distance.
 """
 
+#Libraries
 import RPi.GPIO as GPIO
-from time import sleep, time
+import time
 
-GPIO.setwarnings(False)
+#GPIO Mode (BOARD / BCM)
 GPIO.setmode(GPIO.BCM)
 
+#set GPIO Pins
 GPIO_TRIGGER = 18
 GPIO_ECHO = 24
 
+#set GPIO direction(IN / OUT)
 GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
 GPIO.setup(GPIO_ECHO, GPIO.IN)
 
 def distance():
+    #set Trigger to HIGH
     GPIO.output(GPIO_TRIGGER, True)
 
-    sleep(0.0001)
+    #set Trigger after 0.01ms to LOW
+    time.sleep(0.00001)
     GPIO.output(GPIO_TRIGGER, False)
 
+    StartTime = time.time()
+    StopTime = time.time()
+
+    #save StartTime
     while GPIO.input(GPIO_ECHO) == 0:
-        StartTime = time()
+        StartTime = time.time()
 
+    #save time of arrival
     while GPIO.input(GPIO_ECHO) == 1:
-        StopTime = time()
+        StopTime = time.time()
 
+    #time difference between start and arrival
     TimeElapsed = StopTime - StartTime
+    #multiply with the sonic speed (34300 cm/s)
+    #and divide by 2, because there and back
+    distance = (TimeElapsed * 34300) / 2
 
-    return TimeElapsed * 34300 / 2
+    return distance
 
-if __name__ == "__main__":
-    while True:
-        dist = distance()
-        print ("Measured Distance = %.1f cm" % dist)
-        sleep(1)
+if __name__ == '__main__':
+    try:
+        while True:
+            dist = distance()
+            print("Measured Distance = %.1f cm" % dist)
+            time.sleep(1)
+
+        #Reset by pressing CTRL + C
+    except KeyboardInterrupt:
+        print("Measurement stopped by User")
+        GPIO.cleanup()
+
