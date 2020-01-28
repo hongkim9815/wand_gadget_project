@@ -41,15 +41,15 @@ def data2point(data_rest):
 
 class WandController:
     def __init__(self, verbose=False):
-        self.serial = self.connect_new_serial()
+        self.serial = self._connectNewSerial()
         self._VERBOSE = verbose
 
-    def connect_new_serial(self):
+    def _connectNewSerial(self):
         # TROUBLESHOOTING: "Error: serial device /dev/ttyAMA0 does not exist"
         #     If you update Raspbian OS, then this error can be occurred.
-        #     - Open "/boot/config" with sudo privilege on any editor.      ("sudo vi /boot/config")
+        #     - Open "/boot/config.txt" with privilege on any editor.   ("sudo vi /boot/config.txt")
         #     - Change "enable_uart=0" to "enable_uart=1".
-        #     - Reboot Raspbian OS.                                         ("sudo reboot")
+        #     - Reboot Raspbian OS.                                     ("sudo reboot")
         try:
             ser = serial.Serial("/dev/ttyAMA0", 115200, timeout = 0.1)
         except serial.serialutil.SerialException:
@@ -58,21 +58,21 @@ class WandController:
             ser = serial.Serial("/dev/ttyAMA0", 115200, timeout = 0.1)
         return ser
 
-    def read_serial(self):
+    def readSerial(self):
         if self.serial is None:
-            self.serial = self.connect_new_serial()
+            self.serial = self._connectNewSerial()
             self.serial.inter_byte_timeout = 0.05
         try:
             data = self.serial.read(10000)
         except serial.serialutil.SerialException:
             print("Serial: Error Occurred... Wait a second to recover...")
-            self.serial = self.connect_new_serial()
+            self.serial = self._connectNewSerial()
             time.sleep(0.8)
             self.serial.inter_byte_timeout = 0.05
             data = self.serial.read(10000)
         return data
 
-    def print_data_enc(self, data):
+    def printDataEnc(self, data):
         data_enc = _data_encoding(data)
         if self._VERBOSE:
             print("Wand:   ==================== SERIAL ====================")
@@ -130,16 +130,16 @@ if __name__ == "__main__":
     points = []
     while(True):
         wand = WandController(verbose=True)
-        data = wand.read_serial()
+        data = wand.readSerial()
 
         if (len(str(data)) > 4 and data[0] is 0x02):                # data[0] = 0x02: End to send
                                                                     #         = 0x01: Start to send
-            data_enc = wand.print_data_enc(data)
+            data_enc = wand.printDataEnc(data)
             points.extend(data2point(data_enc['data_rest']))
             action = wand.getAction(data_enc['wand_uid'], points)
             points = []
         elif(len(str(data)) > 4):
-            data_enc = wand.print_data_enc(data)
+            data_enc = wand.printDataEnc(data)
             points.extend(data2point(data_enc['data_rest']))
         else:
             print("Serial: Serial does not detect any signal.")

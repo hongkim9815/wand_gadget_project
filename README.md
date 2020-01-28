@@ -15,12 +15,14 @@ sources/*                   image sources for the project
 
 test                        testfiles to check some functions or features of Raspberry Pi
   /autostart_led_blink.py   a test for autostart and led
+  /button.py                a test for button
   /buzzer.py                a test for buzzer
   /gif_tk.py                a test for gif in Tkinter
   /interact_tk_wand.py      a test for interaction Tkinter and serial connection
-  /multiprocessing_tk.py    a test for multiprocessing with Tkinter, wand, and requests module.
+  /multiprocessing_tk.py    a test for multiprocessing with Tkinter, wand, and requests module
   /thread_tk_wand.py        a test for thread-based programming
   /transparency_tk.py       a test for displaying transparent gif on Tkinter window
+  /ultrasonic.py            a test for distance sensor based on ultrasonic module HC-SR04
   /weather_tk_hangeul.py    a test for displaying hangeul on Tkinter window, and web crawler
 
 main.py                     main python file of the gadget

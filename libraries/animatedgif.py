@@ -68,7 +68,8 @@ class AnimatedGifs:
         self.cis.append(None)
         return self.size - 1
 
-    def delete(self, index):
+    # [v.03] Changed delete() to remove() for better understandability.
+    def remove(self, index):
         if self.gifs[index] is None or index is -1:
             raise IndexError
         self.gifs[index] = None
