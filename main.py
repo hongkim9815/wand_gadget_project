@@ -42,9 +42,11 @@ if __name__ == "__main__":
 # GIFS: List(PhotoImage())
 #       A list of PhotoImage classes. It is configured by function gif2list().
     GIFS = dict()
-    GIFS['gif'] = gif2list(SOURCES_PATH + 'gif2.gif')
-    GIFS['gif2'] = gif2list(SOURCES_PATH + 'maingif2.gif')
-    GIFS['character1'] = gif2list(SOURCES_PATH + 'maingif1.gif')
+    GIFS['cat'] = gif2list(SOURCES_PATH + 'cat.gif', 0, 20)
+    GIFS['main'] = gif2list(SOURCES_PATH + 'main.gif', 0, 20)
+    GIFS['maingif1'] = gif2list(SOURCES_PATH + 'maingif1.gif')
+    GIFS['maingif2'] = gif2list(SOURCES_PATH + 'maingif2.gif')
+    GIFS['working'] = gif2list(SOURCES_PATH + 'working.gif')
 
 
 # ANIGIF: Class AnimatedGifs()
@@ -66,7 +68,7 @@ if __name__ == "__main__":
 def main(first, queue=None, maingif=None):
     if first:
         if maingif is None:
-            maingif = ANIGIF.add(GIFS['character1'], (100, 100))
+            maingif = ANIGIF.add(GIFS['maingif1'], (100, 100))
         if queue is None:
             queue = Queue()
             p1 = Process(target=wandProcess, args=(queue, ))
@@ -83,11 +85,11 @@ def main(first, queue=None, maingif=None):
 
         if datatype == 'w':
             if data is not None:
-                if data['color'] == 'yellow':
+                if data[0]['color'] == 'yellow':
                     ANIGIF.remove(maingif)
                     TKROOT.after(3000, main, True, queue, None)
                     weatherView(True)
-                elif data['color'] == 'red':
+                elif data[0]['color'] == 'red':
                     ANIGIF.remove(maingif)
                     TKROOT.after(2000, main, True, queue, None)
                     weatherView(True)
@@ -149,15 +151,16 @@ def buttonProcess(queue):
 
 def weatherView(first, canvas=None, objs=[]):
     if first:
-        canvas, objs = weatherCanvas(TKROOT, (100, 100))
+        canvas, objs = weatherCanvas(TKROOT, (200, 200))
+        objs.append(ANIGIF.add(GIFS['main'], (100, 100), overlap = True))
         TKROOT.after(3000, weatherView, False, canvas, objs)
-
     else:
         canvas.destroy()
+        ANIGIF.remove(objs[-1])
 
 def helloView(first, objs=None):
     if first:
-        objs = ANIGIF.add(GIFS['gif2'], (200, 200))
+        objs = ANIGIF.add(GIFS['maingif2'], (200, 200), overlap = True)
         TKROOT.after(2000, helloView, False, objs)
 
     else:

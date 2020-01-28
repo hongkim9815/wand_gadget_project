@@ -117,6 +117,7 @@ class WandController:
             action = data[gesture]
         else:
             action = None
+        print(action)
         return action
 
     def setVerbose(self, verbose):

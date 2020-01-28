@@ -52,20 +52,25 @@ class AnimatedGifs:
         self.gifs = []
         self.gifs_position = []
         self.gifs_cycle = []
-
         self.gifs_frame = []
+        self.gifs_overlap = []
+
         self.cis = []
         self.delay = 1/frame
         self.size = 0
         self.execute = True
 
-    def add(self, giflist, position, cycle=-1):
+    def add(self, giflist, position, cycle=-1, overlap=False):
         self.size += 1
         self.gifs.append(giflist)
         self.gifs_position.append(position)
         self.gifs_cycle.append(cycle + 1)
         self.gifs_frame.append(0)
-        self.cis.append(None)
+        self.gifs_overlap.append(overlap)
+        if overlap:
+            self.cis.append([])
+        else:
+            self.cis.append(None)
         return self.size - 1
 
     # [v.03] Changed delete() to remove() for better understandability.
@@ -76,6 +81,12 @@ class AnimatedGifs:
         self.gifs_position[index] = None
         self.gifs_cycle[index] = None
         self.gifs_frame[index] = None
+        if self.gifs_overlap[index]:
+            for ci in self.cis[index]:
+                self.canvas.delete(ci)
+        else:
+            self.canvas.delete(self.cis[index])
+        self.cis[index] = None
 
     def start(self):
         self._animate()
@@ -105,10 +116,20 @@ class AnimatedGifs:
     def _configure(self):
         for i in range(self.size):
             if self.gifs[i] is not None:
-                self.canvas.delete(self.cis[i])
-                self.cis[i] = self.canvas.create_image(self.gifs_position[i][0],
-                                                       self.gifs_position[i][1],
-                                                       image=self.gifs[i][self.gifs_frame[i]])
+                if self.gifs_overlap[i]:
+                    if len(self.cis[i]) == len(self.gifs[i]):
+                        for ci in self.cis[i]:
+                            self.canvas.delete(ci)
+                        self.cis[i] = []
+                    tmp = self.canvas.create_image(self.gifs_position[i][0],
+                                                   self.gifs_position[i][1],
+                                                   image=self.gifs[i][self.gifs_frame[i]])
+                    self.cis[i].append(tmp)
+                else:
+                    self.canvas.delete(self.cis[i])
+                    self.cis[i] = self.canvas.create_image(self.gifs_position[i][0],
+                                                           self.gifs_position[i][1],
+                                                           image=self.gifs[i][self.gifs_frame[i]])
             else:
                 self.canvas.delete(self.cis[i])
 
@@ -118,7 +139,7 @@ class AnimatedGifs:
                 if self.gifs[i] is not None and self.gifs_frame[i] is 0:
                     self.gifs_cycle[i] -= 1
                     if self.gifs_cycle[i] is 0:
-                        self.delete(i)
+                        self.remove(i)
             self._configure()
             for i in range(self.size):
                 if self.gifs[i] is not None:
