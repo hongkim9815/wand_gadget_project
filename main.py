@@ -39,8 +39,8 @@ if __name__ == "__main__":
     TKROOT['bg'] = 'white'
 
 
-# GIFS: List(PhotoImage())
-#       A list of PhotoImage classes. It is configured by function gif2list().
+# GIFS: Dict(List(PhotoImage()))
+#       A dictionary consists of lists of PhotoImage classes configured by function gif2list().
     GIFS = dict()
     GIFS['cat'] = gif2list(SOURCES_PATH + 'cat.gif', 0, 20)
     GIFS['main'] = gif2list(SOURCES_PATH + 'main.gif', 0, 20)
@@ -49,9 +49,16 @@ if __name__ == "__main__":
     GIFS['working'] = gif2list(SOURCES_PATH + 'working.gif')
 
 
+# IMAGES: Dictionary(PhotoImage())
+#         A dictionary of PhotoImage classes.
+    IMAGES = dict()
+    IMAGES['background'] = tkinter.PhotoImage(file=SOURCES_PATH + 'background_frame.png')
+    IMAGES['textbox_left'] = tkinter.PhotoImage(file=SOURCES_PATH + 'textbox-left.png')
+
+
 # ANIGIF: Class AnimatedGifs()
 #         A class for animating GIF file well.
-    ANIGIF = AnimatedGifs(TKROOT, frame=24)
+    ANIGIF = AnimatedGifs(TKROOT, frame=24, background=IMAGES['background'])
 
     print("DONE.")
 
@@ -68,7 +75,8 @@ if __name__ == "__main__":
 def main(first, queue=None, maingif=None):
     if first:
         if maingif is None:
-            maingif = ANIGIF.add(GIFS['maingif1'], (100, 100))
+            maingif = ANIGIF.add(GIFS['maingif1'], (0, 200), overlap=False)
+            textbox_left = ANIGIF.addImage(IMAGES['textbox_left'], (350, 100))
         if queue is None:
             queue = Queue()
             p1 = Process(target=wandProcess, args=(queue, ))
@@ -152,7 +160,7 @@ def buttonProcess(queue):
 def weatherView(first, canvas=None, objs=[]):
     if first:
         canvas, objs = weatherCanvas(TKROOT, (200, 200))
-        objs.append(ANIGIF.add(GIFS['main'], (100, 100), overlap = True))
+        objs.append(ANIGIF.add(GIFS['maingif1'], (0, 0), overlap = True))
         TKROOT.after(3000, weatherView, False, canvas, objs)
     else:
         canvas.destroy()
@@ -160,7 +168,7 @@ def weatherView(first, canvas=None, objs=[]):
 
 def helloView(first, objs=None):
     if first:
-        objs = ANIGIF.add(GIFS['maingif2'], (200, 200), overlap = True)
+        objs = ANIGIF.add(GIFS['working'], (0, 0), overlap = True)
         TKROOT.after(2000, helloView, False, objs)
 
     else:

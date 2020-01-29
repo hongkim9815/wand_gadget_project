@@ -41,7 +41,7 @@ def gif2list(filename, minf=0, maxf=9999):
 # ================================================================================
 
 class AnimatedGifs:
-    def __init__(self, root, frame=24):
+    def __init__(self, root, frame=24, background=None):
         self.root = root
         self.root.update()
         self.canvas = tkinter.Canvas(self.root, bg="white",
@@ -49,11 +49,16 @@ class AnimatedGifs:
                                      height=self.root.winfo_height())
         self.canvas.pack()
         self.canvas.place(x=0, y=0)
+        if background is not None:
+            self.canvas.create_image(0 + background.width() // 2, 0 + background.height() // 2,
+                                     image=background)
         self.gifs = []
         self.gifs_position = []
         self.gifs_cycle = []
         self.gifs_frame = []
         self.gifs_overlap = []
+
+        self.images_ci = []
 
         self.cis = []
         self.delay = 1/frame
@@ -63,7 +68,8 @@ class AnimatedGifs:
     def add(self, giflist, position, cycle=-1, overlap=False):
         self.size += 1
         self.gifs.append(giflist)
-        self.gifs_position.append(position)
+        self.gifs_position.append((position[0] + giflist[0].width() // 2,
+                                   position[1] + giflist[0].height() // 2))
         self.gifs_cycle.append(cycle + 1)
         self.gifs_frame.append(0)
         self.gifs_overlap.append(overlap)
@@ -88,6 +94,19 @@ class AnimatedGifs:
             self.canvas.delete(self.cis[index])
         self.cis[index] = None
 
+    def addImage(self, image, position):
+        self.images_ci.append(self.canvas.create_image(position[0] + image.width() // 2,
+                                                       position[1] + image.height() // 2,
+                                                       image=image))
+        return len(self.images_ci) - 1
+
+    def removeImage(self, index):
+        if self.images_ci[index] == None:
+            raise IndexError
+
+        self.canvas.delete(self.images_ci[index])
+        self.images_ci[index] = None
+
     def start(self):
         self._animate()
 
@@ -100,7 +119,8 @@ class AnimatedGifs:
         return self.gifs[index] is not None
 
     def setPosition(self, index, position):
-        self.gifs_position[index] = position
+        self.gifs_position[index] = (position[0] + self.gifs[index][0].width() // 2,
+                                     position[1] + self.gifs[index][0].height() // 2)
 
     """
     setSize(,,):    Issue: This function is not tested thoroughly... (it might be very very slow)
