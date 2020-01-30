@@ -85,12 +85,33 @@ class WandController:
             print("Wand:   ================================================")
         return data_enc
 
+    def getGesture(self, points):
+        dollar = Dollar()
+        points.reverse()
+
+        if(len(points) < 100):
+            return None
+
+        gesture = dollar.get_gesture(points)
+
+        return gesture
+
+    def getUserInfo(self, wand_uid):
+        try:
+            result = requests.get("http://ec2-13-209-200-6.ap-northeast-2.compute.amazonaws.com"
+                                  + "/api/Gateway/wand/%02d" % (wand_uid))
+        except requests.exceptions.ConnectionError:
+            print("Wand:   requests.get() got an exception...")
+            return None
+        print(result)
+        return result
+
     def getAction(self, wand_uid, points):
         dollar = Dollar()
         points.reverse()
 
         if(len(points)<100):
-            return
+            return None
 
         gesture = dollar.get_gesture(points)
         if self._VERBOSE:

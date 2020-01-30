@@ -1,5 +1,6 @@
+#!/usr/bin/python3
 """
-Title   ultrasonic_distance.py
+Title   ultrasonic.py
 Author  Changmin Lee (Undergraduate Student, College of convergence, DGIST)
 Made    28-Jan-2020
 Comment This program is for testing ultrasonic distance sensor HC-SR04 on Raspberry Pi.

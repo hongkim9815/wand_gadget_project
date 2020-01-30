@@ -15,7 +15,7 @@ from libraries.animatedgif import AnimatedGifs, gif2list
 from libraries.weather import weatherCanvas
 import RPi.GPIO as GPIO
 from multiprocessing import Process, Queue
-from time import sleep
+from time import sleep, time
 
 
 # ================================================================================
@@ -54,6 +54,7 @@ if __name__ == "__main__":
     IMAGES = dict()
     IMAGES['background'] = tkinter.PhotoImage(file=SOURCES_PATH + 'background_frame.png')
     IMAGES['textbox_left'] = tkinter.PhotoImage(file=SOURCES_PATH + 'textbox-left.png')
+    IMAGES['blackboard'] = tkinter.PhotoImage(file=SOURCES_PATH + 'blackboard.png')
 
 
 # ANIGIF: Class AnimatedGifs()
@@ -67,6 +68,8 @@ if __name__ == "__main__":
 # Utils
 # ================================================================================
 
+# EMPTY
+
 
 # ================================================================================
 # Main-view
@@ -75,14 +78,16 @@ if __name__ == "__main__":
 def main(first, queue=None, maingif=None):
     if first:
         if maingif is None:
-            maingif = ANIGIF.add(GIFS['maingif1'], (0, 200), overlap=False)
-            textbox_left = ANIGIF.addImage(IMAGES['textbox_left'], (350, 100))
+            maingif = ANIGIF.add(GIFS['maingif1'], (0, 250), overlap=False)
+            textbox_left = ANIGIF.addImage(IMAGES['textbox_left'], (340, 120))
         if queue is None:
             queue = Queue()
             p1 = Process(target=wandProcess, args=(queue, ))
-            p1.start()
             p2 = Process(target=buttonProcess, args=(queue, ))
+            p3 = Process(target=ultrasonicProcess, args=(queue, ))
+            p1.start()
             p2.start()
+            p3.start()
         TKROOT.after(200, main, False, queue, maingif)
 
     elif not queue.empty():
@@ -105,19 +110,65 @@ def main(first, queue=None, maingif=None):
                 print("There is no works assigned for that motion.")
                 TKROOT.after(200, main, False, queue, maingif)
 
-        elif datatype is 'd':
+        elif datatype is 'b':
+            ANIGIF.remove(maingif)
+            TKROOT.after(2000, main, True, queue, None)
+            userinfoView(True)
+
+        elif datatype is 'u':
             ANIGIF.remove(maingif)
             TKROOT.after(2000, main, True, queue, None)
             helloView(True)
 
         else:
             print("UNEXPECTED DATA IS DETECTED")
+            raise NotImplementedError
 
     else:
         TKROOT.after(200, main, False, queue, maingif)
 
 
-# CHILD PROCESS
+# ================================================================================
+# Sub-views
+# ================================================================================
+
+def weatherView(first, canvas=None, objs=None):
+    if objs is None:
+        objs = []
+    if first:
+        canvas, objs = weatherCanvas(TKROOT, (200, 200))
+        objs.append(ANIGIF.add(GIFS['maingif1'], (0, 0), overlap = True))
+        TKROOT.after(3000, weatherView, False, canvas, objs)
+    else:
+        canvas.destroy()
+
+
+def userinfoView(first, objs=None):
+    if objs is None:
+        objs = []
+    if first:
+        objs.append(ANIGIF.add(GIFS['maingif2'], (0, 200), overlap = False))
+        objs.append(ANIGIF.addImage(IMAGES['blackboard'], (400, 250)))
+        TKROOT.after(2000, userinfoView, False, objs)
+
+    else:
+        ANIGIF.remove(objs[0])
+        ANIGIF.removeImage(objs[1])
+
+
+def helloView(first, objs=None):
+    if first:
+        objs = ANIGIF.add(GIFS['working'], (300, 300), overlap = True)
+        TKROOT.after(2000, helloView, False, objs)
+
+    else:
+        ANIGIF.remove(objs)
+
+
+# ================================================================================
+# Child-Process
+# ================================================================================
+
 def wandProcess(queue):
     points=[]
     wand = WandController(verbose=False)
@@ -147,32 +198,56 @@ def buttonProcess(queue):
 
     while True:
         if GPIO.input(16) == GPIO.HIGH:
-            queue.put(('d', None))
-            sleep(3)
+            queue.put(('b', None))
+            sleep(1)
         sleep(0.1)
 
 
+# CHILD PROCESS
+def ultrasonicProcess(queue):
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BOARD)
 
-# ================================================================================
-# Sub-views
-# ================================================================================
+    hc_trig = 11
+    hc_echo = 12
+    GPIO.setup(hc_trig, GPIO.OUT)
+    GPIO.setup(hc_echo, GPIO.IN)
 
-def weatherView(first, canvas=None, objs=[]):
-    if first:
-        canvas, objs = weatherCanvas(TKROOT, (200, 200))
-        objs.append(ANIGIF.add(GIFS['maingif1'], (0, 0), overlap = True))
-        TKROOT.after(3000, weatherView, False, canvas, objs)
-    else:
-        canvas.destroy()
-        ANIGIF.remove(objs[-1])
+    flag = 0
 
-def helloView(first, objs=None):
-    if first:
-        objs = ANIGIF.add(GIFS['working'], (0, 0), overlap = True)
-        TKROOT.after(2000, helloView, False, objs)
+    while True:
+        if flag is 3:
+            queue.put(('u', None))
+            sleep(10)
+            flag = 0
+        else:
+            GPIO.output(hc_trig, True)
+            sleep(0.00001)
+            GPIO.output(hc_trig, False)
 
-    else:
-        ANIGIF.remove(objs)
+            echo = GPIO.input(hc_echo)
+
+            if echo == 1:
+                sleep(0.2)
+                print("ERROR")
+                continue
+
+            while echo == 0:
+                StartTime = time()
+                echo = GPIO.input(hc_echo)
+
+            while echo == 1:
+                StopTime = time()
+                echo = GPIO.input(hc_echo)
+
+            TimeElapsed = StopTime - StartTime
+            distance = (TimeElapsed * 34300) / 2
+
+            if distance < 10:
+                flag += 1
+
+        sleep(0.2)
+
 
 # ================================================================================
 # MAINLOOP
