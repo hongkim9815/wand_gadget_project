@@ -10,12 +10,14 @@ Usage   INCOMPLETELY IMPLEMENTED
 """
 
 import tkinter
+from PIL import Image
 from libraries.wand import WandController, data2point
 from libraries.animatedgif import AnimatedGifs, gif2list
 from libraries.weather import weatherCanvas
 import RPi.GPIO as GPIO
 from multiprocessing import Process, Queue
 from time import sleep, time
+from glob import glob
 
 
 # ================================================================================
@@ -26,10 +28,14 @@ if __name__ == "__main__":
     print("LOADING...")
 
 
-# SOURCES_PATH: Sources' path of the file directory.
-#               It should represent what directory should we execute this.
+# CONSTANTS: Constants to define options and stable constants
+    INITIAL_PHASE = 0
+
+
+# PATH: Sources' path of the file directory.
     MAIN_PATH = ""
     SOURCES_PATH = MAIN_PATH + "sources/"
+    TMP_PATH = MAIN_PATH + "tmp/"
 
 
 # TKROOT: Tkinter Class Tk()
@@ -39,22 +45,34 @@ if __name__ == "__main__":
     TKROOT['bg'] = 'white'
 
 
-# GIFS: Dict(List(PhotoImage()))
-#       A dictionary consists of lists of PhotoImage classes configured by function gif2list().
-    GIFS = dict()
-    GIFS['cat'] = gif2list(SOURCES_PATH + 'cat.gif', 0, 20)
-    GIFS['main'] = gif2list(SOURCES_PATH + 'main.gif', 0, 20)
-    GIFS['maingif1'] = gif2list(SOURCES_PATH + 'maingif1.gif')
-    GIFS['maingif2'] = gif2list(SOURCES_PATH + 'maingif2.gif')
-    GIFS['working'] = gif2list(SOURCES_PATH + 'working.gif')
-
-
 # IMAGES: Dictionary(PhotoImage())
 #         A dictionary of PhotoImage classes.
     IMAGES = dict()
     IMAGES['background'] = tkinter.PhotoImage(file=SOURCES_PATH + 'background_frame.png')
     IMAGES['textbox_left'] = tkinter.PhotoImage(file=SOURCES_PATH + 'textbox-left.png')
     IMAGES['blackboard'] = tkinter.PhotoImage(file=SOURCES_PATH + 'blackboard.png')
+
+    for f in glob(SOURCES_PATH + "badge/*"):
+        imgtmp = Image.open(f)
+        if "level" in f or "gliter" in f:
+            imgtmp = imgtmp.resize((250, 250), Image.ANTIALIAS)
+        else:
+            imgtmp = imgtmp.resize((100, 100), Image.ANTIALIAS)
+        filename = f[len(SOURCES_PATH + "badge/"):-4]
+        imgtmp.save(TMP_PATH + filename + ".png")
+        IMAGES[filename] = tkinter.PhotoImage(file=TMP_PATH + filename + ".png")
+        # IMAGES[f[len(SOURCES_PATH + "badge/"):-4]]
+
+
+# GIFS: Dict(List(PhotoImage()))
+#       A dictionary consists of lists of PhotoImage classes configured by function gif2list().
+    GIFS = dict()
+    # GIFS['cat'] = gif2list(SOURCES_PATH + 'cat.gif', 0, 20)
+    GIFS['main'] = gif2list(SOURCES_PATH + 'main.gif', 0, 20)
+    GIFS['loading'] = gif2list(SOURCES_PATH + 'loading.gif')
+    GIFS['maingif1'] = gif2list(SOURCES_PATH + 'maingif1.gif')
+    GIFS['maingif2'] = gif2list(SOURCES_PATH + 'maingif2.gif')
+    GIFS['working'] = gif2list(SOURCES_PATH + 'working.gif')
 
 
 # ANIGIF: Class AnimatedGifs()
@@ -75,11 +93,18 @@ if __name__ == "__main__":
 # Main-view
 # ================================================================================
 
-def main(first, queue=None, maingif=None):
-    if first:
-        if maingif is None:
-            maingif = ANIGIF.add(GIFS['maingif1'], (0, 250), overlap=False)
-            textbox_left = ANIGIF.addImage(IMAGES['textbox_left'], (340, 120))
+def main(init, queue=None, objs=None):
+    if objs is None:
+        objs = []
+    else:
+        maingif = objs[0]
+        textbox_left = objs[1]
+
+    if init:
+        if len(objs) is 0:
+            objs.append(ANIGIF.add(GIFS['maingif1'], (0, 250), overlap=False))
+            objs.append(ANIGIF.addImage(IMAGES['textbox_left'], (340, 120)))
+
         if queue is None:
             queue = Queue()
             p1 = Process(target=wandProcess, args=(queue, ))
@@ -88,7 +113,7 @@ def main(first, queue=None, maingif=None):
             p1.start()
             p2.start()
             p3.start()
-        TKROOT.after(200, main, False, queue, maingif)
+        TKROOT.after(200, main, False, queue, objs)
 
     elif not queue.empty():
         try:
@@ -96,57 +121,66 @@ def main(first, queue=None, maingif=None):
         except ValueError:
             print("UNEXPECTED DATA IS DETECTED")
 
-        if datatype == 'w':
+        if datatype == 'w':                                         # WAND MOTION
             if data is not None:
                 if data[0]['color'] == 'yellow':
                     ANIGIF.remove(maingif)
+                    ANIGIF.removeImage(textbox_left)
                     TKROOT.after(3000, main, True, queue, None)
-                    weatherView(True)
+                    badgeView(INITIAL_PHASE, 1)
                 elif data[0]['color'] == 'red':
                     ANIGIF.remove(maingif)
+                    ANIGIF.removeImage(textbox_left)
                     TKROOT.after(2000, main, True, queue, None)
-                    weatherView(True)
+                    # weatherView(True)
+                    badgeView(INITIAL_PHASE, 1)
             else:
                 print("There is no works assigned for that motion.")
-                TKROOT.after(200, main, False, queue, maingif)
+                TKROOT.after(200, main, False, queue, objs)
 
-        elif datatype is 'b':
+        elif datatype is 'b':                                       # BUTTON
             ANIGIF.remove(maingif)
-            TKROOT.after(2000, main, True, queue, None)
-            userinfoView(True)
+            ANIGIF.removeImage(textbox_left)
+            # TKROOT.after(2000, main, True, queue, None)
+            # userinfoView(INITIAL_PHASE)
+            badgeView(INITIAL_PHASE, 1, (True, queue, None))
 
-        elif datatype is 'u':
+        elif datatype is 'u':                                       # ULTRASONIC DISTANCE SENSOR
             ANIGIF.remove(maingif)
+            ANIGIF.removeImage(textbox_left)
             TKROOT.after(2000, main, True, queue, None)
-            helloView(True)
+            helloView(INITIAL_PHASE)
 
         else:
             print("UNEXPECTED DATA IS DETECTED")
             raise NotImplementedError
 
     else:
-        TKROOT.after(200, main, False, queue, maingif)
+        TKROOT.after(200, main, False, queue, objs)
 
 
 # ================================================================================
 # Sub-views
 # ================================================================================
 
-def weatherView(first, canvas=None, objs=None):
+def weatherView(phase, canvas=None, objs=None):
     if objs is None:
         objs = []
-    if first:
+
+    if phase is INITIAL_PHASE:
         canvas, objs = weatherCanvas(TKROOT, (200, 200))
         objs.append(ANIGIF.add(GIFS['maingif1'], (0, 0), overlap = True))
         TKROOT.after(3000, weatherView, False, canvas, objs)
+
     else:
         canvas.destroy()
 
 
-def userinfoView(first, objs=None):
+def userinfoView(phase, objs=None):
     if objs is None:
         objs = []
-    if first:
+
+    if phase is INITIAL_PHASE:
         objs.append(ANIGIF.add(GIFS['maingif2'], (0, 200), overlap = False))
         objs.append(ANIGIF.addImage(IMAGES['blackboard'], (400, 250)))
         TKROOT.after(2000, userinfoView, False, objs)
@@ -156,13 +190,64 @@ def userinfoView(first, objs=None):
         ANIGIF.removeImage(objs[1])
 
 
-def helloView(first, objs=None):
-    if first:
-        objs = ANIGIF.add(GIFS['working'], (300, 300), overlap = True)
+def helloView(phase, objs=None):
+    if objs is None:
+        objs = []
+
+    if phase is INITIAL_PHASE:
+        objs.append(ANIGIF.add(GIFS['working'], (300, 300), overlap = True))
         TKROOT.after(2000, helloView, False, objs)
 
     else:
-        ANIGIF.remove(objs)
+        ANIGIF.remove(objs[0])
+
+
+def badgeView(phase, wand_uid, mainarg, pq=None, objs=None):
+    if objs is None:
+        objs = []
+
+    if phase is 0:
+        q = Queue()
+        p = Process(target=userinfoProcess, args=(q, wand_uid))
+        p.start()
+        pq = (p, q)
+        objs.append(ANIGIF.add(GIFS['loading'], (1024 // 2 - 40, 768 // 2 - 40), overlap = False))
+        TKROOT.after(300, badgeView, 1, wand_uid, mainarg, pq, objs)
+
+    elif phase is 1:
+        if not pq[0].is_alive():
+            ANIGIF.remove(objs[0])
+            result = pq[1].get()['result']
+            badge_info = []
+            badge_pos = [(600, 140), (700, 260), (700, 410), (600, 530)]
+            objs.append(ANIGIF.addImage(IMAGES['badge_level_diamond'], (300, 250)))
+
+            for i in range(3):
+                objs.append(-1)
+
+            for i in range(len(result['badge_info'])):
+                rt = result['badge_info'][i]
+                badge_path = rt['badge_url'][29:-4]
+                objs.append(ANIGIF.addImage(IMAGES[badge_path], badge_pos[i]))
+
+            TKROOT.after(0, badgeView, 2, wand_uid, mainarg, pq, objs)
+            pq[0].join()
+
+        else:
+            TKROOT.after(300, badgeView, 1, wand_uid, mainarg, pq, objs)
+
+    elif phase < 10:
+        if objs[phase % 3 + 2] is not -1:
+            ANIGIF.removeImage(objs[phase % 3 + 2])
+        objs[(phase + 1) % 3 + 2] = ANIGIF.addImage(IMAGES['user_badge_gliter' + str((phase + 1) % 3 + 1)],
+                                      (300, 250))
+        TKROOT.after(300, badgeView, phase + 1 , wand_uid, mainarg, pq, objs)
+
+    else:
+        for imgidx in objs[1:]:
+            if ANIGIF.isActiveImage(imgidx):
+                ANIGIF.removeImage(imgidx)
+        TKROOT.after(0, main, mainarg[0], mainarg[1], mainarg[2])
 
 
 # ================================================================================
@@ -220,6 +305,7 @@ def ultrasonicProcess(queue):
             queue.put(('u', None))
             sleep(10)
             flag = 0
+
         else:
             GPIO.output(hc_trig, True)
             sleep(0.00001)
@@ -247,6 +333,28 @@ def ultrasonicProcess(queue):
                 flag += 1
 
         sleep(0.2)
+
+
+def userinfoProcess(queue, wand_uid):
+    try:
+        import requests
+        import json
+        result = requests.get("http://ec2-13-209-200-6.ap-northeast-2.compute.amazonaws.com"
+                              + "/api/Gateway/Wands/%02d/User" % (wand_uid))
+    except requests.exceptions.ConnectionError:
+        print("requests: requests.get() got an exception...")
+        queue.put({result_state: "ERROR"})
+        return
+
+    result = json.loads(result.text)
+
+    if result['result_state'] is not 1:
+        print("requests: requests.get() got an exception...")
+        queue.put({result_state: "ERROR"})
+        return
+
+    queue.put(result)
+    return
 
 
 # ================================================================================

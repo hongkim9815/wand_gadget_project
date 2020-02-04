@@ -113,10 +113,15 @@ class AnimatedGifs:
     def stop(self):
         self.execute = False
 
-    def isPlay(self, index):
+    def isActive(self, index):
         if index is -1:
             raise IndexError
         return self.gifs[index] is not None
+
+    def isActiveImage(self, index):
+        if index is -1:
+            raise IndexError
+        return self.images_ci[index] is not None
 
     def setPosition(self, index, position):
         self.gifs_position[index] = (position[0] + self.gifs[index][0].width() // 2,
