@@ -18,7 +18,9 @@ if __name__ == "__main__":
         print("requests: requests.get() got an exception...")
         exit(0)
 
-    result = json.loads(result.text)
+    result = result.text
+    print(result)
+    result = json.loads(result)
 
     if result['result_state'] is not 1:
         print("requests: requests.get() got an exception...")

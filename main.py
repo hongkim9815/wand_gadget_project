@@ -10,7 +10,7 @@ Usage   INCOMPLETELY IMPLEMENTED
 """
 
 import tkinter
-from PIL import Image
+from PIL import Image, ImageTk
 from libraries.wand import WandController, data2point
 from libraries.animatedgif import AnimatedGifs, gif2list
 from libraries.weather import weatherCanvas
@@ -21,11 +21,11 @@ from glob import glob
 
 
 # ================================================================================
-# INITIALIZE
+# INITIALIZE CONSTANTS AND VARIABLES
 # ================================================================================
 
 if __name__ == "__main__":
-    print("LOADING...")
+    print("INITIALIZING CONSTANTS AND VARIABLES...")
 
 
 # CONSTANTS: Constants to define options and stable constants
@@ -45,48 +45,45 @@ if __name__ == "__main__":
     TKROOT['bg'] = 'white'
 
 
-# IMAGES: Dictionary(PhotoImage())
-#         A dictionary of PhotoImage classes.
     IMAGES = dict()
-    IMAGES['background'] = tkinter.PhotoImage(file=SOURCES_PATH + 'background_frame.png')
-    IMAGES['textbox_left'] = tkinter.PhotoImage(file=SOURCES_PATH + 'textbox-left.png')
-    IMAGES['blackboard'] = tkinter.PhotoImage(file=SOURCES_PATH + 'blackboard.png')
-
-    for f in glob(SOURCES_PATH + "badge/*"):
-        imgtmp = Image.open(f)
-        if "level" in f or "gliter" in f:
-            imgtmp = imgtmp.resize((250, 250), Image.ANTIALIAS)
-        else:
-            imgtmp = imgtmp.resize((100, 100), Image.ANTIALIAS)
-        filename = f[len(SOURCES_PATH + "badge/"):-4]
-        imgtmp.save(TMP_PATH + filename + ".png")
-        IMAGES[filename] = tkinter.PhotoImage(file=TMP_PATH + filename + ".png")
-        # IMAGES[f[len(SOURCES_PATH + "badge/"):-4]]
-
-
-# GIFS: Dict(List(PhotoImage()))
-#       A dictionary consists of lists of PhotoImage classes configured by function gif2list().
     GIFS = dict()
-    # GIFS['cat'] = gif2list(SOURCES_PATH + 'cat.gif', 0, 20)
-    GIFS['main'] = gif2list(SOURCES_PATH + 'main.gif', 0, 20)
-    GIFS['loading'] = gif2list(SOURCES_PATH + 'loading.gif')
-    GIFS['maingif1'] = gif2list(SOURCES_PATH + 'maingif1.gif')
-    GIFS['maingif2'] = gif2list(SOURCES_PATH + 'maingif2.gif')
-    GIFS['working'] = gif2list(SOURCES_PATH + 'working.gif')
 
-
-# ANIGIF: Class AnimatedGifs()
-#         A class for animating GIF file well.
-    ANIGIF = AnimatedGifs(TKROOT, frame=24, background=IMAGES['background'])
 
     print("DONE.")
-
 
 # ================================================================================
 # Utils
 # ================================================================================
 
-# EMPTY
+def png2list(filename, frame, frame_duplicate=1, resize=None):
+    img = Image.open(filename)
+
+    if resize is not None:
+        img = img.resize(resize)
+
+    retlist = []
+    x, y = img.size
+    img_copied = img.copy()
+
+    for k in list(range(frame)) + list(range(frame, 0, -1)):
+        if len(glob(TMP_PATH + filename[len(SOURCES_PATH + "badge/"):-4]
+                    + "-%02d-%02d-%03d-%03d.png" % (frame, k, x, y))) is 1:
+            img_copied = Image.open(TMP_PATH + filename[len(SOURCES_PATH + "badge/"):-4]
+                                    + "-%02d-%02d-%03d-%03d.png" % (frame, k, x, y))
+
+        else:
+            for i in range(x):
+                for j in range(y):
+                    pix = img.getpixel((i, j))
+                    img_copied.putpixel((i, j),
+                                        (pix[0], pix[1], pix[2], int(pix[3] * k / frame)))
+            img_copied.save(TMP_PATH + filename[len(SOURCES_PATH + "badge/"):-4]
+                            + "-%02d-%02d-%03d-%03d.png" % (frame, k, x, y))
+
+        for i in range(frame_duplicate):
+            retlist.append(ImageTk.PhotoImage(img_copied))
+
+    return retlist
 
 
 # ================================================================================
@@ -220,7 +217,9 @@ def badgeView(phase, wand_uid, mainarg, pq=None, objs=None):
             result = pq[1].get()['result']
             badge_info = []
             badge_pos = [(600, 140), (700, 260), (700, 410), (600, 530)]
-            objs.append(ANIGIF.addImage(IMAGES['badge_level_diamond'], (300, 250)))
+
+            objs.append(ANIGIF.addImage(IMAGES[result['user_info']['user_badge_url'][27:-4]],
+                                        (300, 250)))
 
             for i in range(3):
                 objs.append(-1)
@@ -236,17 +235,20 @@ def badgeView(phase, wand_uid, mainarg, pq=None, objs=None):
         else:
             TKROOT.after(300, badgeView, 1, wand_uid, mainarg, pq, objs)
 
-    elif phase < 10:
-        if objs[phase % 3 + 2] is not -1:
+    elif phase < 15:
+        if objs[phase % 3 + 2] is not -1 and False:
             ANIGIF.removeImage(objs[phase % 3 + 2])
-        objs[(phase + 1) % 3 + 2] = ANIGIF.addImage(IMAGES['user_badge_gliter' + str((phase + 1) % 3 + 1)],
-                                      (300, 250))
-        TKROOT.after(300, badgeView, phase + 1 , wand_uid, mainarg, pq, objs)
+        objs[(phase + 1) % 3 + 2] = ANIGIF.add(GIFS['gliter' + str((phase + 1) % 3 + 1)],
+                                               (300, 250), cycle=1)
+        TKROOT.after(900, badgeView, phase + 1 , wand_uid, mainarg, pq, objs)
 
     else:
-        for imgidx in objs[1:]:
-            if ANIGIF.isActiveImage(imgidx):
-                ANIGIF.removeImage(imgidx)
+        ANIGIF.removeImage(objs[1])
+        for i in objs[2:5]:
+            if ANIGIF.isActive(i):
+                ANIGIF.remove(i)
+        for i in objs[5:]:
+            ANIGIF.removeImage(i)
         TKROOT.after(0, main, mainarg[0], mainarg[1], mainarg[2])
 
 
@@ -343,14 +345,14 @@ def userinfoProcess(queue, wand_uid):
                               + "/api/Gateway/Wands/%02d/User" % (wand_uid))
     except requests.exceptions.ConnectionError:
         print("requests: requests.get() got an exception...")
-        queue.put({result_state: "ERROR"})
+        queue.put({result_state: 0})
         return
 
     result = json.loads(result.text)
 
     if result['result_state'] is not 1:
         print("requests: requests.get() got an exception...")
-        queue.put({result_state: "ERROR"})
+        queue.put({result_state: 0})
         return
 
     queue.put(result)
@@ -358,11 +360,52 @@ def userinfoProcess(queue, wand_uid):
 
 
 # ================================================================================
-# MAINLOOP
+# LOAD AND PLAY MAINLOOP
 # ================================================================================
 
 if __name__ == "__main__":
-    TKROOT.after(0, main, True)
+
+    print("LOADING FOR CLASSES...")
+
+# IMAGES: Dictionary(PhotoImage())
+#         A dictionary of PhotoImage classes.
+    IMAGES['background'] = tkinter.PhotoImage(file=SOURCES_PATH + 'background_frame.png')
+    IMAGES['textbox_left'] = tkinter.PhotoImage(file=SOURCES_PATH + 'textbox-left.png')
+    IMAGES['blackboard'] = tkinter.PhotoImage(file=SOURCES_PATH + 'blackboard.png')
+
+    for f in glob(SOURCES_PATH + "badge/*"):
+        imgtmp = Image.open(f)
+        if "level" in f:
+            imgtmp = imgtmp.resize((250, 250), Image.ANTIALIAS)
+        elif "gliter" not in f:
+            imgtmp = imgtmp.resize((100, 100), Image.ANTIALIAS)
+        IMAGES[f[len(SOURCES_PATH + "badge/"):-4]] = ImageTk.PhotoImage(imgtmp)
+
+
+# GIFS: Dict(List(PhotoImage()))
+#       A dictionary consists of lists of PhotoImage classes configured by function gif2list().
+    # GIFS['cat'] = gif2list(SOURCES_PATH + 'cat.gif', 0, 20)
+    GIFS['main'] = gif2list(SOURCES_PATH + 'main.gif', 0, 20)
+    GIFS['loading'] = gif2list(SOURCES_PATH + 'loading.gif')
+    GIFS['maingif1'] = gif2list(SOURCES_PATH + 'maingif1.gif')
+    GIFS['maingif2'] = gif2list(SOURCES_PATH + 'maingif2.gif')
+    GIFS['working'] = gif2list(SOURCES_PATH + 'working.gif')
+    GIFS['gliter1'] = png2list(SOURCES_PATH + 'badge/user_badge_gliter1.png', 16,
+                               frame_duplicate=1, resize=(250, 250))
+    GIFS['gliter2'] = png2list(SOURCES_PATH + 'badge/user_badge_gliter2.png', 16,
+                               frame_duplicate=1, resize=(250, 250))
+    GIFS['gliter3'] = png2list(SOURCES_PATH + 'badge/user_badge_gliter3.png', 16,
+                               frame_duplicate=1, resize=(250, 250))
+
+
+# ANIGIF: Class AnimatedGifs()
+#         A class for animating GIF file well.
+    ANIGIF = AnimatedGifs(TKROOT, frame=24, background=IMAGES['background'])
     ANIGIF.start()
+
+
+    print("DONE.")
+
+    TKROOT.after(0, main, True)
     TKROOT.mainloop()
 

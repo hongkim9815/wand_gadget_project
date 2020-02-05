@@ -15,6 +15,7 @@ libraries                   python libraries
 sources/*                   image sources for the project
 
 test                        testfiles to check some functions or features of Raspberry Pi
+  /alpha.py                 a test for alpha channel of transparent png image file
   /api.py                   a test for API on our platform "magicoding.io"
   /autostart_led_blink.py   a test for autostart and led
   /button.py                a test for button
