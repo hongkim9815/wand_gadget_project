@@ -18,6 +18,8 @@ import RPi.GPIO as GPIO
 from multiprocessing import Process, Queue
 from time import sleep, time
 from glob import glob
+from gtts import gTTS
+from os import system
 
 
 # ================================================================================
@@ -115,7 +117,7 @@ def initView(init, queue=None, objs=None):
                                  'process': None,
                                  'user_data': None}
                 ANIGIF.remove(objs[0])
-                main(True, queue=queue, last_execute_time=time(), user_data_get=user_data_get)
+                main(True, queue=queue, execute_time=time(), user_data_get=user_data_get)
 
             elif datatype == 'u':
                 ANIGIF.remove(objs[0])
@@ -126,7 +128,7 @@ def initView(init, queue=None, objs=None):
             TKROOT.after(500, initView, False, queue, objs)
 
 
-def main(init, queue=None, objs=None, last_execute_time=-1, user_data_get=None):
+def main(init, queue=None, objs=None, execute_time=-1, user_data_get=None, ttsproc=None):
     def object_remover():
         ANIGIF.remove(objs[0])
         ANIGIF.removeImage(objs[1])
@@ -142,10 +144,19 @@ def main(init, queue=None, objs=None, last_execute_time=-1, user_data_get=None):
     else:
         wand_uid = user_data_get['wand_uid']
 
-    if time() - last_execute_time > 10:
+    if time() - execute_time > 10:
         TKROOT.after(0, initView, True, queue)
         object_remover()
         return
+
+    print(init, objs, execute_time)
+
+
+    if ttsproc is not None:
+        if not ttsproc.is_alive():
+            ttsproc.join()
+            ttsproc = None
+
 
     # INITIATE PART
     # Get user data from "userinfoProcess" with "wand_uid"
@@ -180,8 +191,11 @@ def main(init, queue=None, objs=None, last_execute_time=-1, user_data_get=None):
                         user_data_get['user_data'] = data['result']
                         ANIGIF.remove(objs[3])
                         objs[4] = ANIGIF.add(GIFS['maingif2'], (400, 200))
-                        TKROOT.after(100, main, False, queue, objs, time(), user_data_get)
-
+                        ttsproc = Process(target=ttsProcess,
+                                          args=(user_data_get['user_data']['user_info']['user_id']
+                                                + "안녕! 코딩마법학교에 온걸 환영해!", ))
+                        ttsproc.start()
+                        TKROOT.after(100, main, False, queue, objs, time(), user_data_get, ttsproc)
                     # If the "user_data" which is given by the process is not valid...
                     else:
                         print("SERVER CONNECTION HAS A PROBLEM... RE-POOL THE PROCESS.")
@@ -200,7 +214,7 @@ def main(init, queue=None, objs=None, last_execute_time=-1, user_data_get=None):
             while not queue.empty():
                 queue.get()
 
-            TKROOT.after(100, main, False, queue, objs, time(), user_data_get)
+            TKROOT.after(100, main, False, queue, objs, time(), user_data_get, ttsproc)
 
 
     elif not queue.empty():
@@ -216,34 +230,34 @@ def main(init, queue=None, objs=None, last_execute_time=-1, user_data_get=None):
             if data['gesture'] == 'star':
                 object_remover()
                 badgeView(INITIAL_PHASE, user_data, time())
-                TKROOT.after(5000, main, True, queue, None, time(), user_data_get)
+                TKROOT.after(5000, main, True, queue, None, time(), user_data_get, ttsproc)
 
             elif data['gesture'] == 'triangle':
                 object_remover()
                 weatherView(INITIAL_PHASE)
-                TKROOT.after(2000, main, True, queue, None, time(), user_data_get)
+                TKROOT.after(2000, main, True, queue, None, time(), user_data_get, ttsproc)
 
             # Else, goto practice board.
             else:
                 print("PRACTICE BOARD HAD NOT BEEN IMPLEMENTED YET...")
-                TKROOT.after(200, main, False, queue, objs, time(), user_data_get)
+                TKROOT.after(200, main, False, queue, objs, time(), user_data_get, ttsproc)
 
         # BUTTON PROCESS
         elif datatype is 'b':
             object_remover()
             badgeView(INITIAL_PHASE, user_data, time())
-            TKROOT.after(5000, main, True, queue, None, time(), user_data_get)
+            TKROOT.after(5000, main, True, queue, None, time(), user_data_get, ttsproc)
 
         # ULTRASONIC PROCESS
         elif datatype is 'u':
-            pass
+            TKROOT.after(200, main, False, queue, objs, execute_time, user_data_get, ttsproc)
 
         else:
             print("UNEXPECTED DATA IS DETECTED")
             raise NotImplementedError
 
     else:
-        TKROOT.after(200, main, False, queue, objs, last_execute_time, user_data_get)
+        TKROOT.after(200, main, False, queue, objs, execute_time, user_data_get, ttsproc)
 
 
 # ================================================================================
@@ -438,6 +452,16 @@ def userinfoProcess(queue, wand_uid):
 
     queue.put(('r', result))
     print("YES")
+    exit(0)
+
+
+# CHILD PROCESS
+def ttsProcess(text):
+    # The reason of adding "S" is that the initial volume of mplayer is too low...
+    if len(glob(TMP_PATH + "TTS-" + text[:3] + "*")) is not 1:
+        tts = gTTS(text="S" + text, lang='ko')
+        tts.save(TMP_PATH + "TTS-" + text[:3] + ".mp3")
+    system("mplayer -speed 1.05 " + TMP_PATH + "TTS-" + text[:3] + ".mp3")
     exit(0)
 
 

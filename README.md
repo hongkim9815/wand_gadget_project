@@ -25,6 +25,7 @@ test                        testfiles to check some functions or features of Ras
   /multiprocessing_tk.py    a test for multiprocessing with Tkinter, wand, and requests module
   /thread_tk_wand.py        a test for thread-based programming
   /transparency_tk.py       a test for displaying transparent gif on Tkinter window
+  /tts.py                   a test for Google TTS and audio player (mplayer)
   /ultrasonic.py            a test for distance sensor which is ultrasonic module HC-SR04
   /ultrasonic_advanced.py   a test for accuracy and compatibility of the distance sensor
   /weather_tk_hangeul.py    a test for displaying Hangeul on Tkinter window, and web crawler
