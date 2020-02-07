@@ -7,6 +7,7 @@ Comment This python library file is for controlling animated GIF files.
 """
 
 import tkinter
+from tkinter.font import Font
 import time
 
 # ================================================================================
@@ -58,7 +59,7 @@ class AnimatedGifs:
         self.gifs_frame = []
         self.gifs_overlap = []
 
-        self.images_ci = []
+        self.objects = []
 
         self.cis = []
         self.delay = 1/frame
@@ -94,18 +95,45 @@ class AnimatedGifs:
             self.canvas.delete(self.cis[index])
         self.cis[index] = None
 
+    def remove_ig(self, index):
+        if self.isActive(index):
+            self.remove(index)
+
     def addImage(self, image, position):
-        self.images_ci.append(self.canvas.create_image(position[0] + image.width() // 2,
+        self.objects.append(self.canvas.create_image(position[0] + image.width() // 2,
                                                        position[1] + image.height() // 2,
                                                        image=image))
-        return len(self.images_ci) - 1
+        return len(self.objects) - 1
 
     def removeImage(self, index):
-        if self.images_ci[index] == None:
+        if self.objects[index] == None:
             raise IndexError
 
-        self.canvas.delete(self.images_ci[index])
-        self.images_ci[index] = None
+        self.canvas.delete(self.objects[index])
+        self.objects[index] = None
+
+    def removeImage_ig(self, index):
+        if self.isActiveImage(index):
+            self.removeImage(index)
+
+    def addText(self, text, position, font=None):
+        if font is None:
+            font = Font(family='Helvetica', size=12, weight='bold')
+
+        self.objects.append(self.canvas.create_image(position[0], position[1],
+                                                     font=font, text=text))
+        return len(self.objects) - 1
+
+    def removeText(self, index):
+        if self.objects[index] == None:
+            raise IndexError
+
+        self.canvas.delete(self.objects[index])
+        self.objects[index] = None
+
+    def removeText_ig(self, index):
+        if self.isActiveImage(index):
+            self.removeImage(index)
 
     def start(self):
         self._animate()
@@ -114,14 +142,14 @@ class AnimatedGifs:
         self.execute = False
 
     def isActive(self, index):
-        if index is -1:
-            raise IndexError
+        if index is -1 or index is None:
+            return False
         return self.gifs[index] is not None
 
     def isActiveImage(self, index):
-        if index is -1:
-            raise IndexError
-        return self.images_ci[index] is not None
+        if index is -1 or index is None:
+            return False
+        return self.objects[index] is not None
 
     def setPosition(self, index, position):
         self.gifs_position[index] = (position[0] + self.gifs[index][0].width() // 2,

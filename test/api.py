@@ -8,6 +8,7 @@ Comment This program is test for compatibility with API of framework on magicodi
 
 import requests
 import json
+import pprint
 
 
 if __name__ == "__main__":
@@ -26,12 +27,15 @@ if __name__ == "__main__":
         print("requests: requests.get() got an exception...")
         exit(0)
 
-    print(result)
+    # print(result)
     result = result['result']
-    print(result['user_info'])
-    print(result['user_info']['user_uid'])
-    print(result['today_mission']['mission_order'])
-    print(result['today_mission']['mission_title'])
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint(result)
+    # print(result)
+    # print(result['user_info'])
+    # print(result['user_info']['user_uid'])
+    # print(result['today_mission']['mission_order'])
+    # print(result['today_mission']['mission_title'])
     for rt in result['unit_list']:
         for rtt in rt['mission_list']:
             if rtt['mission_order'] == result['today_mission']['mission_order']:
@@ -40,8 +44,4 @@ if __name__ == "__main__":
 
     for rt in result['badge_info']:
         print(rt['badge_url'])
-
-
-
-
 

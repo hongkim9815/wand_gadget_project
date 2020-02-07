@@ -94,6 +94,9 @@ class WandController:
 
         gesture = dollar.get_gesture(points)
 
+        if self._VERBOSE:
+            print(gesture)
+
         return gesture
 
     def getUserInfo(self, wand_uid):
@@ -103,7 +106,10 @@ class WandController:
         except requests.exceptions.ConnectionError:
             print("Wand:   requests.get() got an exception...")
             return None
-        print(result)
+
+        if self._VERBOSE:
+            print(result)
+
         return result
 
     def getAction(self, wand_uid, points):

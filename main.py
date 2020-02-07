@@ -90,18 +90,11 @@ def png2list(filename, frame, frame_duplicate=1, resize=None):
 # Main-view
 # ================================================================================
 
-def main(init, queue=None, objs=None):
+def initView(init, queue=None, objs=None):
     if objs is None:
-        objs = []
-    else:
-        maingif = objs[0]
-        textbox_left = objs[1]
+        objs = [None]
 
     if init:
-        if len(objs) is 0:
-            objs.append(ANIGIF.add(GIFS['maingif1'], (0, 250), overlap=False))
-            objs.append(ANIGIF.addImage(IMAGES['textbox_left'], (340, 120)))
-
         if queue is None:
             queue = Queue()
             p1 = Process(target=wandProcess, args=(queue, ))
@@ -110,50 +103,147 @@ def main(init, queue=None, objs=None):
             p1.start()
             p2.start()
             p3.start()
-        TKROOT.after(200, main, False, queue, objs)
+        objs[0] = ANIGIF.add(GIFS['working'], (120, 162), overlap=True)
+
+        TKROOT.after(1000, initView, False, queue, objs)
+
+    else:
+        if not queue.empty():
+            datatype, data = queue.get()
+            if datatype == 'w':
+                user_data_get = {'wand_uid': data['wand_uid'],
+                                 'process': None,
+                                 'user_data': None}
+                ANIGIF.remove(objs[0])
+                main(True, queue=queue, last_execute_time=time(), user_data_get=user_data_get)
+
+            elif datatype == 'u':
+                ANIGIF.remove(objs[0])
+                helloView(INITIAL_PHASE)
+                TKROOT.after(2000, initView, True, queue, objs)
+
+        else:
+            TKROOT.after(500, initView, False, queue, objs)
+
+
+def main(init, queue=None, objs=None, last_execute_time=-1, user_data_get=None):
+    def object_remover():
+        ANIGIF.remove(objs[0])
+        ANIGIF.removeImage(objs[1])
+        ANIGIF.removeImage(objs[2])
+        ANIGIF.remove_ig(objs[3])
+        ANIGIF.remove_ig(objs[4])
+
+    if objs is None:
+        objs = [None] * 8
+
+    if user_data_get is None:
+        raise Exception
+    else:
+        wand_uid = user_data_get['wand_uid']
+
+    if time() - last_execute_time > 10:
+        TKROOT.after(0, initView, True, queue)
+        object_remover()
+        return
+
+    # INITIATE PART
+    # Get user data from "userinfoProcess" with "wand_uid"
+    if init:
+
+        # If objects are not in current view...
+        if objs[0] is None and objs[1] is None and objs[2] is None:
+            objs[0] = ANIGIF.add(GIFS['maingif1'], (0, 250), overlap=False)
+            objs[1] = ANIGIF.addImage(IMAGES['textbox_left'], (340, 120))
+            objs[2] = ANIGIF.addImage(IMAGES['blackboard'], (390, 300))
+
+        # If "userinfoProcess" is not active...
+        if user_data_get['process'] is None:
+            objs[3] = ANIGIF.add(GIFS['loading'], (600, 400))
+            user_data_get['process'] = Process(target=userinfoProcess, args=(queue, wand_uid))
+            user_data_get['process'].start()
+            TKROOT.after(100, main, True, queue, objs, time(), user_data_get)
+
+        # Else if "user_data" is not vaild...
+        # It means that "userinfoProcess" did not give any information after initView->main.
+        elif user_data_get['user_data'] is None:
+            empty_flag = True
+
+            # Checking queue, if "user_data" is given by "userinfoProcess", then goto next phase.
+            while not queue.empty():
+                datatype, data = queue.get()
+                if datatype == 'r':
+                    empty_flag = False
+                    user_data_get['process'].join()
+
+                    if data['result_state'] is 1:
+                        user_data_get['user_data'] = data['result']
+                        ANIGIF.remove(objs[3])
+                        objs[4] = ANIGIF.add(GIFS['maingif2'], (400, 200))
+                        TKROOT.after(100, main, False, queue, objs, time(), user_data_get)
+
+                    # If the "user_data" which is given by the process is not valid...
+                    else:
+                        print("SERVER CONNECTION HAS A PROBLEM... RE-POOL THE PROCESS.")
+                        user_data_get['process'] = Process(target=userinfoProcess,
+                                                           args=(queue, wand_uid))
+                        user_data_get['process'].start()
+                        TKROOT.after(100, main, True, queue, objs, time(), user_data_get)
+
+            # If "datatype == 'r'" was not matched in while loop,
+            # then tkafter action should be given.
+            if empty_flag:
+                TKROOT.after(100, main, True, queue, objs, time(), user_data_get)
+
+        # "user_data" is already valid.
+        else:
+            while not queue.empty():
+                queue.get()
+
+            TKROOT.after(100, main, False, queue, objs, time(), user_data_get)
+
 
     elif not queue.empty():
+        user_data = user_data_get['user_data']
+
         try:
             datatype, data = queue.get()
         except ValueError:
             print("UNEXPECTED DATA IS DETECTED")
 
-        if datatype == 'w':                                         # WAND MOTION
-            if data is not None:
-                if data[0]['color'] == 'yellow':
-                    ANIGIF.remove(maingif)
-                    ANIGIF.removeImage(textbox_left)
-                    TKROOT.after(3000, main, True, queue, None)
-                    badgeView(INITIAL_PHASE, 1)
-                elif data[0]['color'] == 'red':
-                    ANIGIF.remove(maingif)
-                    ANIGIF.removeImage(textbox_left)
-                    TKROOT.after(2000, main, True, queue, None)
-                    # weatherView(True)
-                    badgeView(INITIAL_PHASE, 1)
+        # WAND PROCESS
+        if datatype == 'w':
+            if data['gesture'] == 'star':
+                object_remover()
+                badgeView(INITIAL_PHASE, user_data, time())
+                TKROOT.after(5000, main, True, queue, None, time(), user_data_get)
+
+            elif data['gesture'] == 'triangle':
+                object_remover()
+                weatherView(INITIAL_PHASE)
+                TKROOT.after(2000, main, True, queue, None, time(), user_data_get)
+
+            # Else, goto practice board.
             else:
-                print("There is no works assigned for that motion.")
-                TKROOT.after(200, main, False, queue, objs)
+                print("PRACTICE BOARD HAD NOT BEEN IMPLEMENTED YET...")
+                TKROOT.after(200, main, False, queue, objs, time(), user_data_get)
 
-        elif datatype is 'b':                                       # BUTTON
-            ANIGIF.remove(maingif)
-            ANIGIF.removeImage(textbox_left)
-            # TKROOT.after(2000, main, True, queue, None)
-            # userinfoView(INITIAL_PHASE)
-            badgeView(INITIAL_PHASE, 1, (True, queue, None))
+        # BUTTON PROCESS
+        elif datatype is 'b':
+            object_remover()
+            badgeView(INITIAL_PHASE, user_data, time())
+            TKROOT.after(5000, main, True, queue, None, time(), user_data_get)
 
-        elif datatype is 'u':                                       # ULTRASONIC DISTANCE SENSOR
-            ANIGIF.remove(maingif)
-            ANIGIF.removeImage(textbox_left)
-            TKROOT.after(2000, main, True, queue, None)
-            helloView(INITIAL_PHASE)
+        # ULTRASONIC PROCESS
+        elif datatype is 'u':
+            pass
 
         else:
             print("UNEXPECTED DATA IS DETECTED")
             raise NotImplementedError
 
     else:
-        TKROOT.after(200, main, False, queue, objs)
+        TKROOT.after(200, main, False, queue, objs, last_execute_time, user_data_get)
 
 
 # ================================================================================
@@ -166,7 +256,6 @@ def weatherView(phase, canvas=None, objs=None):
 
     if phase is INITIAL_PHASE:
         canvas, objs = weatherCanvas(TKROOT, (200, 200))
-        objs.append(ANIGIF.add(GIFS['maingif1'], (0, 0), overlap = True))
         TKROOT.after(3000, weatherView, False, canvas, objs)
 
     else:
@@ -189,67 +278,50 @@ def userinfoView(phase, objs=None):
 
 def helloView(phase, objs=None):
     if objs is None:
-        objs = []
+        objs = [None]
 
     if phase is INITIAL_PHASE:
-        objs.append(ANIGIF.add(GIFS['working'], (300, 300), overlap = True))
+        objs[0] = ANIGIF.add(GIFS['gif2'], (300, 300), overlap = False)
         TKROOT.after(2000, helloView, False, objs)
 
     else:
         ANIGIF.remove(objs[0])
 
 
-def badgeView(phase, wand_uid, mainarg, pq=None, objs=None):
+def badgeView(phase, user_info, execute_time, objs=None):
     if objs is None:
-        objs = []
+        objs = [None] * 8
 
     if phase is 0:
-        q = Queue()
-        p = Process(target=userinfoProcess, args=(q, wand_uid))
-        p.start()
-        pq = (p, q)
-        objs.append(ANIGIF.add(GIFS['loading'], (1024 // 2 - 40, 768 // 2 - 40), overlap = False))
-        TKROOT.after(300, badgeView, 1, wand_uid, mainarg, pq, objs)
+        badge_info = []
+        badge_pos = [(600, 140), (700, 260), (700, 410), (600, 530)]
 
-    elif phase is 1:
-        if not pq[0].is_alive():
-            ANIGIF.remove(objs[0])
-            result = pq[1].get()['result']
-            badge_info = []
-            badge_pos = [(600, 140), (700, 260), (700, 410), (600, 530)]
+        objs[0] = ANIGIF.addImage(IMAGES[user_info['user_info']['user_badge_url'][27:-4]],
+                                  (300, 250))
 
-            objs.append(ANIGIF.addImage(IMAGES[result['user_info']['user_badge_url'][27:-4]],
-                                        (300, 250)))
+        for i in range(len(user_info['badge_info'])):
+            rt = user_info['badge_info'][i]
+            badge_path = rt['badge_url'][29:-4]
+            objs[i+1] = ANIGIF.addImage(IMAGES[badge_path], badge_pos[i])
 
-            for i in range(3):
-                objs.append(-1)
+        TKROOT.after(0, badgeView, 1, user_info, execute_time, objs)
 
-            for i in range(len(result['badge_info'])):
-                rt = result['badge_info'][i]
-                badge_path = rt['badge_url'][29:-4]
-                objs.append(ANIGIF.addImage(IMAGES[badge_path], badge_pos[i]))
-
-            TKROOT.after(0, badgeView, 2, wand_uid, mainarg, pq, objs)
-            pq[0].join()
-
-        else:
-            TKROOT.after(300, badgeView, 1, wand_uid, mainarg, pq, objs)
-
-    elif phase < 15:
-        if objs[phase % 3 + 2] is not -1 and False:
-            ANIGIF.removeImage(objs[phase % 3 + 2])
-        objs[(phase + 1) % 3 + 2] = ANIGIF.add(GIFS['gliter' + str((phase + 1) % 3 + 1)],
+    elif phase in [1, 2, 3]:
+        if objs[(phase + 1) % 3 + 5] is not -1 and False:
+            ANIGIF.removeImage(objs[(phase + 1) % 3 + 5])
+        objs[(phase + 2) % 3 + 5] = ANIGIF.add(GIFS['gliter' + str(phase % 3 + 1)],
                                                (300, 250), cycle=1)
-        TKROOT.after(900, badgeView, phase + 1 , wand_uid, mainarg, pq, objs)
-
+        if time() - execute_time < 5:
+            TKROOT.after(1001, badgeView, (phase) % 3 + 1 , user_info, execute_time, objs)
+        else:
+            TKROOT.after(0, badgeView, 4, user_info, execute_time, objs)
     else:
-        ANIGIF.removeImage(objs[1])
-        for i in objs[2:5]:
+        for i in objs[:4]:
+            if ANIGIF.isActiveImage(i):
+                ANIGIF.removeImage(i)
+        for i in objs[5:]:
             if ANIGIF.isActive(i):
                 ANIGIF.remove(i)
-        for i in objs[5:]:
-            ANIGIF.removeImage(i)
-        TKROOT.after(0, main, mainarg[0], mainarg[1], mainarg[2])
 
 
 # ================================================================================
@@ -259,6 +331,7 @@ def badgeView(phase, wand_uid, mainarg, pq=None, objs=None):
 def wandProcess(queue):
     points=[]
     wand = WandController(verbose=False)
+    print("WAND PROCESS START")
 
     while(True):
         data = wand.readSerial()
@@ -267,10 +340,13 @@ def wandProcess(queue):
                                                         #         = 0x01: Start to send
             data_enc = wand.printDataEnc(data)
             points.extend(data2point(data_enc['data_rest']))
-            action = wand.getAction(data_enc['wand_uid'], points)
-            if action is not None:
-                queue.put(('w', action['marble']))
+            gesture = wand.getGesture(points)
+            print("WAND DETECTED")
+            queue.put(('w', {'gesture': gesture,
+                             'points': points,
+                             'wand_uid': data_enc['wand_uid']}))
             points = []
+
         elif(len(str(data)) > 4):
             data_enc = wand.printDataEnc(data)
             points.extend(data2point(data_enc['data_rest']))
@@ -278,25 +354,29 @@ def wandProcess(queue):
 
 # CHILD PROCESS
 def buttonProcess(queue):
+    print("BUTTON PROCESS START")
+
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BOARD)
-
     GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
     while True:
         if GPIO.input(16) == GPIO.HIGH:
             queue.put(('b', None))
+            print("BUTTON DETECTED")
             sleep(1)
         sleep(0.1)
 
 
 # CHILD PROCESS
 def ultrasonicProcess(queue):
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BOARD)
+    print("ULTRASONIC PROCESS START")
 
     hc_trig = 11
     hc_echo = 12
+
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BOARD)
     GPIO.setup(hc_trig, GPIO.OUT)
     GPIO.setup(hc_echo, GPIO.IN)
 
@@ -305,7 +385,7 @@ def ultrasonicProcess(queue):
     while True:
         if flag is 3:
             queue.put(('u', None))
-            sleep(10)
+            sleep(5)
             flag = 0
 
         else:
@@ -337,6 +417,7 @@ def ultrasonicProcess(queue):
         sleep(0.2)
 
 
+# CHILD PROCESS
 def userinfoProcess(queue, wand_uid):
     try:
         import requests
@@ -345,18 +426,19 @@ def userinfoProcess(queue, wand_uid):
                               + "/api/Gateway/Wands/%02d/User" % (wand_uid))
     except requests.exceptions.ConnectionError:
         print("requests: requests.get() got an exception...")
-        queue.put({result_state: 0})
-        return
+        queue.put(('r', {result_state: 0}))
+        exit(0)
 
     result = json.loads(result.text)
 
     if result['result_state'] is not 1:
         print("requests: requests.get() got an exception...")
-        queue.put({result_state: 0})
-        return
+        queue.put(('r', {result_state: 0}))
+        exit(0)
 
-    queue.put(result)
-    return
+    queue.put(('r', result))
+    print("YES")
+    exit(0)
 
 
 # ================================================================================
@@ -389,6 +471,7 @@ if __name__ == "__main__":
     GIFS['loading'] = gif2list(SOURCES_PATH + 'loading.gif')
     GIFS['maingif1'] = gif2list(SOURCES_PATH + 'maingif1.gif')
     GIFS['maingif2'] = gif2list(SOURCES_PATH + 'maingif2.gif')
+    GIFS['gif2'] = gif2list(SOURCES_PATH + 'gif2.gif')
     GIFS['working'] = gif2list(SOURCES_PATH + 'working.gif')
     GIFS['gliter1'] = png2list(SOURCES_PATH + 'badge/user_badge_gliter1.png', 16,
                                frame_duplicate=1, resize=(250, 250))
@@ -406,6 +489,6 @@ if __name__ == "__main__":
 
     print("DONE.")
 
-    TKROOT.after(0, main, True)
+    TKROOT.after(0, initView, True)
     TKROOT.mainloop()
 
