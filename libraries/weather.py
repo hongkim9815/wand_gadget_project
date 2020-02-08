@@ -60,18 +60,18 @@ WEATHER_FILE_DICT = {'맑음': 'sun',
 def getAllRequests():
     htmls = dict()
     for time_code in time_list:
-        files = glob.glob("saved_" + TODAY_DATE + time_code + ".html")
+        files = glob.glob("tmp/saved_" + TODAY_DATE + time_code + ".html")
         if len(files) is 0:
             temp = requests.get('https://search.naver.com/search.naver?query=전국'
                                 + time_code + '날씨')
             temp.encoding = 'utf-8'
             temptext = temp.text
             htmls[time_code] = temptext
-            f = open("saved_" + TODAY_DATE + time_code + ".html", 'w')
+            f = open("tmp/saved_" + TODAY_DATE + time_code + ".html", 'w')
             f.write(temptext)
             f.close()
         else:
-            f = open("saved_" + TODAY_DATE + time_code + ".html", 'r')
+            f = open("tmp/saved_" + TODAY_DATE + time_code + ".html", 'r')
             htmls[time_code] = f.read()
             f.close()
     return htmls

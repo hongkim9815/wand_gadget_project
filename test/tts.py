@@ -15,7 +15,7 @@ import os
 
 
 MAIN_PATH = "../"
-SOURCES_PATH = MAIN_PATH + "sources/"
+TMP_PATH = MAIN_PATH + "sources/"
 
 student_name = "선생님"
 text = "S" + student_name + "안녕! 코딩마법학교에 온걸 환영해!"
@@ -23,7 +23,7 @@ text = "S" + student_name + "안녕! 코딩마법학교에 온걸 환영해!"
 print(0, time.time())
 tts = gTTS(text=text, lang='ko')
 print(1, time.time())
-tts.save(SOURCES_PATH + "asdf.mp3")
+tts.save(TMP_PATH + "asdf.mp3")
 print(2, time.time())
-os.system("mplayer -speed 1.05 " + SOURCES_PATH + "asdf.mp3")
+os.system("mplayer -speed 1.05 " + TMP_PATH + "asdf.mp3")
 print(3, time.time())

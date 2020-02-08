@@ -33,20 +33,61 @@ def gif2list_png(img, frame, frame_duplicate=1):
     return retlist
 
 
+def roundCourse(img, radius=20, resize=None):
+    x, y = img.size
+
+    for i in range(radius):
+        for j in range(radius):
+            if (i - radius) ** 2 + (j - radius) ** 2 > radius ** 2:
+                pix = img.getpixel((i, j))
+                img.putpixel((i, j), (pix[0], pix[1], pix[2], 0))
+    for i in range(x-radius, x):
+        for j in range(radius):
+            if (i - x + radius) ** 2 + (j - radius) ** 2 > radius ** 2:
+                pix = img.getpixel((i, j))
+                img.putpixel((i, j), (pix[0], pix[1], pix[2], 0))
+    for i in range(radius):
+        for j in range(y-radius,y):
+            if (i - radius) ** 2 + (j - y + radius) ** 2 > radius ** 2:
+                pix = img.getpixel((i, j))
+                img.putpixel((i, j), (pix[0], pix[1], pix[2], 0))
+    for i in range(x-radius,x):
+        for j in range(y-radius,y):
+            if (i - x + radius) ** 2 + (j - y + radius) ** 2 > radius ** 2:
+                pix = img.getpixel((i, j))
+                img.putpixel((i, j), (pix[0], pix[1], pix[2], 0))
+    return ImageTk.PhotoImage(img)
+
+
+def getBadgeFrame(img):
+    x, y = img.size
+
+    for i in range(x):
+        for j in range(y):
+            pix = img.getpixel((i, j))
+            statement = (i - x / 2) ** 2 + (j - y / 2) ** 2
+            for k in range(10):
+                if statement < (71 - 0.1 * k) ** 2:
+                    img.putpixel((i, j), (pix[0], pix[1], pix[2], int(0.1 * (9 - k) * 255)))
+    img.save(SOURCES_PATH + "badge/badgeframe.png")
+
+
 if __name__ == "__main__":
     TKROOT = tkinter.Tk()
     TKROOT.geometry('1024x768')
     TKROOT['bg'] = 'black'
 
-    MAIN_PATH = ""
+    MAIN_PATH = "../"
     SOURCES_PATH = MAIN_PATH + "sources/"
     TMP_PATH = MAIN_PATH + "tmp/"
 
     IMAGES = dict()
     GIFS = dict()
     IMAGES['background'] = tkinter.PhotoImage(file=SOURCES_PATH + 'background_frame.png')
+
     ANIGIF = AnimatedGifs(TKROOT, frame=24, background=IMAGES['background'])
 
+    """
     for f in glob(SOURCES_PATH + "badge/" + "user_badge_*"):
         imgtmp = Image.open(f)
         tmp = gif2list_png(imgtmp, 6, 2)
@@ -54,5 +95,14 @@ if __name__ == "__main__":
         ANIGIF.add(tmp, (200, 200), overlap=False)
 
     ANIGIF.start()
+    """
 
+    """
+    for f in glob(SOURCES_PATH + "course/" + "course_*"):
+        tmp = roundCourse(Image.open(f))
+        ANIGIF.addImage(tmp, (100, 100))
     TKROOT.mainloop()
+    """
+
+    getBadgeFrame(Image.open(SOURCES_PATH + "badge/badge_mythical_owl.png"))
+

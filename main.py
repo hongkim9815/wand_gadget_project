@@ -10,6 +10,7 @@ Usage   INCOMPLETELY IMPLEMENTED
 """
 
 import tkinter
+from tkinter.font import Font
 from PIL import Image, ImageTk
 from libraries.wand import WandController, data2point
 from libraries.animatedgif import AnimatedGifs, gif2list
@@ -27,11 +28,14 @@ from os import system
 # ================================================================================
 
 if __name__ == "__main__":
-    print("INITIALIZING CONSTANTS AND VARIABLES...")
-
 
 # CONSTANTS: Constants to define options and stable constants
     INITIAL_PHASE = 0
+    VERBOSE = False
+
+
+    if VERBOSE:
+        print("INITIALIZING CONSTANTS AND VARIABLES...")
 
 
 # PATH: Sources' path of the file directory.
@@ -51,7 +55,8 @@ if __name__ == "__main__":
     GIFS = dict()
 
 
-    print("DONE.")
+    if VERBOSE:
+        print("DONE.")
 
 # ================================================================================
 # Utils
@@ -61,7 +66,7 @@ def png2list(filename, frame, frame_duplicate=1, resize=None):
     img = Image.open(filename)
 
     if resize is not None:
-        img = img.resize(resize)
+        img = img.resize(resize, Image.ANTIALIAS)
 
     retlist = []
     x, y = img.size
@@ -86,6 +91,55 @@ def png2list(filename, frame, frame_duplicate=1, resize=None):
             retlist.append(ImageTk.PhotoImage(img_copied))
 
     return retlist
+
+
+def roundImage(img, radius=20, rounding=2, resize=None):
+    r = rounding
+
+    if resize is not None:
+        img = img.resize(resize, Image.ANTIALIAS)
+        x, y = resize
+    else:
+        x, y = img.size
+
+    for i in range(radius):
+        for j in range(radius):
+            if abs(i - radius) ** r + abs(j - radius) ** r > radius ** r + 1:
+                pix = img.getpixel((i, j))
+                img.putpixel((i, j), (pix[0], pix[1], pix[2], 0))
+    for i in range(x-radius, x):
+        for j in range(radius):
+            if abs(i - x + radius) ** r + abs(j - radius) ** r > radius ** r + 1:
+                pix = img.getpixel((i, j))
+                img.putpixel((i, j), (pix[0], pix[1], pix[2], 0))
+    for i in range(radius):
+        for j in range(y-radius,y):
+            if abs(i - radius) ** r + abs(j - y + radius) ** r > radius ** r + 1:
+                pix = img.getpixel((i, j))
+                img.putpixel((i, j), (pix[0], pix[1], pix[2], 0))
+    for i in range(x-radius,x):
+        for j in range(y-radius,y):
+            if abs(i - x + radius) ** r + abs(j - y + radius) ** r > radius ** r + 1:
+                pix = img.getpixel((i, j))
+                img.putpixel((i, j), (pix[0], pix[1], pix[2], 0))
+
+    return ImageTk.PhotoImage(img)
+
+
+def getCourseFilename(data):
+    return data['user_course_info']['course_thumbnail'][30:-4]
+
+
+def getCourseTitle(data):
+    return data['user_course_info']['course_title']
+
+
+def getTodayMission(data):
+    return data['today_mission']['mission_order'], data['today_mission']['mission_title']
+
+
+def getBadgeName(data):
+    return data['user_info']['user_badge_url'][27:-4]
 
 
 # ================================================================================
@@ -124,20 +178,55 @@ def initView(init, queue=None, objs=None):
                 helloView(INITIAL_PHASE)
                 TKROOT.after(2000, initView, True, queue, objs)
 
+            elif datatype == 'b':
+                user_data_get = {'wand_uid': 1,
+                                 'process': None,
+                                 'user_data': None}
+                ANIGIF.remove(objs[0])
+                main(True, queue=queue, execute_time=time(), user_data_get=user_data_get)
+
+            else:
+                TKROOT.after(250, initView, False, queue, objs)
+
         else:
-            TKROOT.after(500, initView, False, queue, objs)
+            TKROOT.after(250, initView, False, queue, objs)
 
 
 def main(init, queue=None, objs=None, execute_time=-1, user_data_get=None, ttsproc=None):
+
     def object_remover():
         ANIGIF.remove(objs[0])
-        ANIGIF.removeImage(objs[1])
+        ANIGIF.removeImage_ig(objs[1])
         ANIGIF.removeImage(objs[2])
         ANIGIF.remove_ig(objs[3])
-        ANIGIF.remove_ig(objs[4])
+        ANIGIF.removeImage_ig(objs[4])
+        ANIGIF.removeText_ig(objs[5])
+        ANIGIF.removeText_ig(objs[6])
+        ANIGIF.removeText_ig(objs[7])
+        ANIGIF.removeText_ig(objs[8])
+        ANIGIF.removeText_ig(objs[9])
+
+
+    def course_view_constructor(objs, data):
+        objs[4] = ANIGIF.addImage(IMAGES[getCourseFilename(data)], (450, 375))
+        objs[5] = ANIGIF.addText(getCourseTitle(data), (500, 350))
+        mission_order, mission_title = getTodayMission(data)
+        font = Font(family='NanumBarunpen', size=12, weight='bold')
+        # UnPilgiBold
+        objs[6] = ANIGIF.addText(mission_order, (775, 400), font=font)
+        if len(mission_title) > 45:
+            objs[7] = ANIGIF.addText(mission_title[:20], (775, 430), font=font)
+            objs[8] = ANIGIF.addText(mission_title[20:40], (775, 460), font=font)
+            objs[8] = ANIGIF.addText(mission_title[40:], (775, 490), font=font)
+        if len(mission_title) > 25:
+            objs[7] = ANIGIF.addText(mission_title[:20], (775, 430), font=font)
+            objs[8] = ANIGIF.addText(mission_title[20:], (775, 460), font=font)
+        else:
+            objs[7] = ANIGIF.addText(mission_title, (775, 430), font=font)
+
 
     if objs is None:
-        objs = [None] * 8
+        objs = [None] * 10
 
     if user_data_get is None:
         raise Exception
@@ -148,9 +237,6 @@ def main(init, queue=None, objs=None, execute_time=-1, user_data_get=None, ttspr
         TKROOT.after(0, initView, True, queue)
         object_remover()
         return
-
-    print(init, objs, execute_time)
-
 
     if ttsproc is not None:
         if not ttsproc.is_alive():
@@ -165,8 +251,8 @@ def main(init, queue=None, objs=None, execute_time=-1, user_data_get=None, ttspr
         # If objects are not in current view...
         if objs[0] is None and objs[1] is None and objs[2] is None:
             objs[0] = ANIGIF.add(GIFS['maingif1'], (0, 250), overlap=False)
-            objs[1] = ANIGIF.addImage(IMAGES['textbox_left'], (340, 120))
-            objs[2] = ANIGIF.addImage(IMAGES['blackboard'], (390, 300))
+            # objs[1] = ANIGIF.addImage(IMAGES['textbox_left'], (340, 120))
+            objs[2] = ANIGIF.addImage(IMAGES['blackboard'], (370, 215))
 
         # If "userinfoProcess" is not active...
         if user_data_get['process'] is None:
@@ -188,17 +274,22 @@ def main(init, queue=None, objs=None, execute_time=-1, user_data_get=None, ttspr
                     user_data_get['process'].join()
 
                     if data['result_state'] is 1:
-                        user_data_get['user_data'] = data['result']
                         ANIGIF.remove(objs[3])
-                        objs[4] = ANIGIF.add(GIFS['maingif2'], (400, 200))
+                        course_view_constructor(objs, data['result'])
+
+                        username = data['result']['user_info']['user_name']
                         ttsproc = Process(target=ttsProcess,
-                                          args=(user_data_get['user_data']['user_info']['user_id']
-                                                + "안녕! 코딩마법학교에 온걸 환영해!", ))
+                                          args=("안녕, " + username
+                                                + "! 코딩마법학교에 온걸 환영해!", ))
                         ttsproc.start()
+
+                        user_data_get['user_data'] = data['result']
                         TKROOT.after(100, main, False, queue, objs, time(), user_data_get, ttsproc)
                     # If the "user_data" which is given by the process is not valid...
                     else:
-                        print("SERVER CONNECTION HAS A PROBLEM... RE-POOL THE PROCESS.")
+                        if VERBOSE:
+                            print("SERVER CONNECTION HAS A PROBLEM... RE-POOL THE PROCESS.")
+
                         user_data_get['process'] = Process(target=userinfoProcess,
                                                            args=(queue, wand_uid))
                         user_data_get['process'].start()
@@ -214,6 +305,7 @@ def main(init, queue=None, objs=None, execute_time=-1, user_data_get=None, ttspr
             while not queue.empty():
                 queue.get()
 
+            course_view_constructor(objs, user_data_get['user_data'])
             TKROOT.after(100, main, False, queue, objs, time(), user_data_get, ttsproc)
 
 
@@ -303,6 +395,18 @@ def helloView(phase, objs=None):
 
 
 def badgeView(phase, user_info, execute_time, objs=None):
+
+    def object_remover():
+        ANIGIF.removeImage(objs[0])
+        ANIGIF.removeImage(objs[1])
+        ANIGIF.removeImage(objs[2])
+        ANIGIF.removeImage(objs[3])
+        ANIGIF.removeImage(objs[4])
+        ANIGIF.remove_ig(objs[5])
+        ANIGIF.remove_ig(objs[6])
+        ANIGIF.remove_ig(objs[7])
+
+
     if objs is None:
         objs = [None] * 8
 
@@ -310,13 +414,14 @@ def badgeView(phase, user_info, execute_time, objs=None):
         badge_info = []
         badge_pos = [(600, 140), (700, 260), (700, 410), (600, 530)]
 
-        objs[0] = ANIGIF.addImage(IMAGES[user_info['user_info']['user_badge_url'][27:-4]],
-                                  (300, 250))
+        objs[0] = ANIGIF.addImage(IMAGES[getBadgeName(user_info)], (300, 250))
 
         for i in range(len(user_info['badge_info'])):
-            rt = user_info['badge_info'][i]
-            badge_path = rt['badge_url'][29:-4]
+            badge_path = user_info['badge_info'][i]['badge_url'][29:-4]
             objs[i+1] = ANIGIF.addImage(IMAGES[badge_path], badge_pos[i])
+
+        for i in range(4 - len(user_info['badge_info'])):
+            objs[4-i] = ANIGIF.addImage(IMAGES['badge_frame'], badge_pos[3 - i])
 
         TKROOT.after(0, badgeView, 1, user_info, execute_time, objs)
 
@@ -324,18 +429,14 @@ def badgeView(phase, user_info, execute_time, objs=None):
         if objs[(phase + 1) % 3 + 5] is not -1 and False:
             ANIGIF.removeImage(objs[(phase + 1) % 3 + 5])
         objs[(phase + 2) % 3 + 5] = ANIGIF.add(GIFS['gliter' + str(phase % 3 + 1)],
-                                               (300, 250), cycle=1)
+                                               (260, 210), cycle=1)
         if time() - execute_time < 5:
             TKROOT.after(1001, badgeView, (phase) % 3 + 1 , user_info, execute_time, objs)
         else:
             TKROOT.after(0, badgeView, 4, user_info, execute_time, objs)
+
     else:
-        for i in objs[:4]:
-            if ANIGIF.isActiveImage(i):
-                ANIGIF.removeImage(i)
-        for i in objs[5:]:
-            if ANIGIF.isActive(i):
-                ANIGIF.remove(i)
+        object_remover()
 
 
 # ================================================================================
@@ -343,9 +444,11 @@ def badgeView(phase, user_info, execute_time, objs=None):
 # ================================================================================
 
 def wandProcess(queue):
+    if VERBOSE:
+        print("WAND PROCESS START")
+
     points=[]
     wand = WandController(verbose=False)
-    print("WAND PROCESS START")
 
     while(True):
         data = wand.readSerial()
@@ -355,7 +458,8 @@ def wandProcess(queue):
             data_enc = wand.printDataEnc(data)
             points.extend(data2point(data_enc['data_rest']))
             gesture = wand.getGesture(points)
-            print("WAND DETECTED")
+            if VERBOSE:
+                print("WAND DETECTED")
             queue.put(('w', {'gesture': gesture,
                              'points': points,
                              'wand_uid': data_enc['wand_uid']}))
@@ -368,7 +472,8 @@ def wandProcess(queue):
 
 # CHILD PROCESS
 def buttonProcess(queue):
-    print("BUTTON PROCESS START")
+    if VERBOSE:
+        print("BUTTON PROCESS START")
 
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BOARD)
@@ -377,14 +482,16 @@ def buttonProcess(queue):
     while True:
         if GPIO.input(16) == GPIO.HIGH:
             queue.put(('b', None))
-            print("BUTTON DETECTED")
+            if VERBOSE:
+                print("BUTTON DETECTED")
             sleep(1)
         sleep(0.1)
 
 
 # CHILD PROCESS
 def ultrasonicProcess(queue):
-    print("ULTRASONIC PROCESS START")
+    if VERBOSE:
+        print("ULTRASONIC PROCESS START")
 
     hc_trig = 11
     hc_echo = 12
@@ -399,6 +506,8 @@ def ultrasonicProcess(queue):
     while True:
         if flag is 3:
             queue.put(('u', None))
+            if VERBOSE:
+                print("ULTRASONIC DETECTED")
             sleep(5)
             flag = 0
 
@@ -433,6 +542,9 @@ def ultrasonicProcess(queue):
 
 # CHILD PROCESS
 def userinfoProcess(queue, wand_uid):
+    if VERBOSE:
+        print("USERINFO PROCESS START")
+
     try:
         import requests
         import json
@@ -440,7 +552,7 @@ def userinfoProcess(queue, wand_uid):
                               + "/api/Gateway/Wands/%02d/User" % (wand_uid))
     except requests.exceptions.ConnectionError:
         print("requests: requests.get() got an exception...")
-        queue.put(('r', {result_state: 0}))
+        queue.put(('r', {"result_state": 0}))
         exit(0)
 
     result = json.loads(result.text)
@@ -451,17 +563,28 @@ def userinfoProcess(queue, wand_uid):
         exit(0)
 
     queue.put(('r', result))
-    print("YES")
+
+    if VERBOSE:
+        print("USERINFO PROCESS COMPLETED")
+
     exit(0)
 
 
 # CHILD PROCESS
 def ttsProcess(text):
+    if VERBOSE:
+        print("TTS PROCESS START")
+
     # The reason of adding "S" is that the initial volume of mplayer is too low...
     if len(glob(TMP_PATH + "TTS-" + text[:3] + "*")) is not 1:
         tts = gTTS(text="S" + text, lang='ko')
         tts.save(TMP_PATH + "TTS-" + text[:3] + ".mp3")
-    system("mplayer -speed 1.05 " + TMP_PATH + "TTS-" + text[:3] + ".mp3")
+    system("mplayer -quiet -speed 1.05 "
+           + TMP_PATH + "TTS-" + text[:3] + ".mp3 > /dev/null 2> /dev/null")
+
+    if VERBOSE:
+        print("TTS PROCESS COMPLETED")
+
     exit(0)
 
 
@@ -471,13 +594,16 @@ def ttsProcess(text):
 
 if __name__ == "__main__":
 
-    print("LOADING FOR CLASSES...")
+    if VERBOSE:
+        print("LOADING FOR CLASSES...")
 
 # IMAGES: Dictionary(PhotoImage())
 #         A dictionary of PhotoImage classes.
     IMAGES['background'] = tkinter.PhotoImage(file=SOURCES_PATH + 'background_frame.png')
     IMAGES['textbox_left'] = tkinter.PhotoImage(file=SOURCES_PATH + 'textbox-left.png')
-    IMAGES['blackboard'] = tkinter.PhotoImage(file=SOURCES_PATH + 'blackboard.png')
+    tmp = Image.open(SOURCES_PATH + 'blackboard.png').resize((int(480 * 7 / 6), int(343 * 7 / 6)),
+                                                             Image.ANTIALIAS)
+    IMAGES['blackboard'] = ImageTk.PhotoImage(tmp)
 
     for f in glob(SOURCES_PATH + "badge/*"):
         imgtmp = Image.open(f)
@@ -487,31 +613,37 @@ if __name__ == "__main__":
             imgtmp = imgtmp.resize((100, 100), Image.ANTIALIAS)
         IMAGES[f[len(SOURCES_PATH + "badge/"):-4]] = ImageTk.PhotoImage(imgtmp)
 
+    for f in glob(SOURCES_PATH + "course/*"):
+        imgtmp = Image.open(f)
+        IMAGES[f[len(SOURCES_PATH + "course/"):-4]] = roundImage(imgtmp, rounding=3, radius = 15,
+                                                                 resize=(320 * 4 // 6,
+                                                                         220 * 4 // 6))
 
 # GIFS: Dict(List(PhotoImage()))
 #       A dictionary consists of lists of PhotoImage classes configured by function gif2list().
     # GIFS['cat'] = gif2list(SOURCES_PATH + 'cat.gif', 0, 20)
-    GIFS['main'] = gif2list(SOURCES_PATH + 'main.gif', 0, 20)
+    # GIFS['main'] = gif2list(SOURCES_PATH + 'main.gif', 0, 20)
     GIFS['loading'] = gif2list(SOURCES_PATH + 'loading.gif')
     GIFS['maingif1'] = gif2list(SOURCES_PATH + 'maingif1.gif')
     GIFS['maingif2'] = gif2list(SOURCES_PATH + 'maingif2.gif')
     GIFS['gif2'] = gif2list(SOURCES_PATH + 'gif2.gif')
     GIFS['working'] = gif2list(SOURCES_PATH + 'working.gif')
     GIFS['gliter1'] = png2list(SOURCES_PATH + 'badge/user_badge_gliter1.png', 16,
-                               frame_duplicate=1, resize=(250, 250))
+                               frame_duplicate=1, resize=(330, 330))
     GIFS['gliter2'] = png2list(SOURCES_PATH + 'badge/user_badge_gliter2.png', 16,
-                               frame_duplicate=1, resize=(250, 250))
+                               frame_duplicate=1, resize=(330, 330))
     GIFS['gliter3'] = png2list(SOURCES_PATH + 'badge/user_badge_gliter3.png', 16,
-                               frame_duplicate=1, resize=(250, 250))
+                               frame_duplicate=1, resize=(330, 330))
 
 
 # ANIGIF: Class AnimatedGifs()
 #         A class for animating GIF file well.
-    ANIGIF = AnimatedGifs(TKROOT, frame=24, background=IMAGES['background'])
+    ANIGIF = AnimatedGifs(TKROOT, frame=29.98, background=IMAGES['background'], grid=50)
     ANIGIF.start()
 
 
-    print("DONE.")
+    if VERBOSE:
+        print("DONE.")
 
     TKROOT.after(0, initView, True)
     TKROOT.mainloop()

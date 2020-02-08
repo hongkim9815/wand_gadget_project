@@ -16,7 +16,7 @@ from tkinter import *
 from tkinter.font import Font
 
 sources_path = "../sources/weather/"
-saved_path = "saved_200118"
+saved_path = "../tmp/saved_200118"
 time_list = ['', '오늘오전', '오늘오후날씨', '내일오전', '내일오후']
 locate_code_dict = {'Seoul': '001013',
                     'Bakryeong': '002001',
