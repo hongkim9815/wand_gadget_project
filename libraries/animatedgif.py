@@ -66,6 +66,7 @@ class AnimatedGifs:
         self.gifs_active = []
 
         self.objects = [None] * self.MAXSIZE
+        self.objects_remove = []
         self.cis = [None] * self.MAXSIZE
 
         self.delay = 1/frame
@@ -140,8 +141,7 @@ class AnimatedGifs:
         if self.objects[index] == None:
             raise IndexError
 
-        self.canvas.delete(self.objects[index])
-        self.objects[index] = None
+        self.objects_remove.append(index)
 
     def removeImage_ig(self, index):
         if self.isActiveImage(index):
@@ -168,8 +168,7 @@ class AnimatedGifs:
         if self.objects[index] == None:
             raise IndexError
 
-        self.canvas.delete(self.objects[index])
-        self.objects[index] = None
+        self.objects_remove.append(index)
 
     def removeText_ig(self, index):
         if self.isActiveText(index):
@@ -219,11 +218,15 @@ class AnimatedGifs:
                                                            image=self.gifs[i][self.gifs_frame[i]])
             else:
                 self.canvas.delete(self.cis[i])
+        for i in self.objects_remove:
+            self.canvas.delete(self.objects[i])
+            self.objects[i] = None
+        self.objects_remove = []
 
     def _animate(self):
         if self.execute:
-            for i in self.gifs_active:
-                if self.gifs_frame[i] is 0:
+            for i in tuple(self.gifs_active):
+                if self.gifs_frame[i] is 0 and self.gifs_cycle[i] is not -1:
                     self.gifs_cycle[i] -= 1
                     if self.gifs_cycle[i] is 0:
                         self.remove(i)
