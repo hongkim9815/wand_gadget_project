@@ -8,26 +8,59 @@ Comment This python library file is for controlling animated GIF files.
 
 import tkinter
 from tkinter.font import Font
+from PIL import Image, ImageTk, GifImagePlugin
 import time
 
 # ================================================================================
 # Utils
 # ================================================================================
 
-def gif2list(filename, minf=0, maxf=9999, speed=1):
+def gif2list(filename, minf=0, maxf=9999, frame_skip=1, frame_duplicate=1, effect=None):
     it, itmax = minf, maxf
     retlist = []
 
-    while itmax > it * speed:
+    while itmax > it * frame_skip:
         try:
-            retlist.append(tkinter.PhotoImage(file=filename,
-                                              format='gif -index {}'.format(it * speed)))
+            tmp = tkinter.PhotoImage(file=filename,
+                                     format='gif -index {}'.format(it * frame_skip))
+            for i in range(frame_duplicate):
+                retlist.append(tmp)
             it += 1
         except tkinter.TclError:
             break
 
     if len(retlist) is 0:
         raise Exception("File: " + filename + "is not exist")
+
+    if effect is not None:
+        if 'reverse' in effect:
+            retlist.reverse()
+        elif 'gliter' in effect:
+            tmplist = retlist[1:-1]
+            tmplist.reverse()
+            retlist.extend(tmplist)
+
+    return retlist
+
+
+def gif2list_v2(filename, frame_skip=1, effect=None, frame_duplicate=1):
+    retlist = []
+
+    img = Image.open(filename)
+    for i in range(0, img.n_frames, frame_skip):
+        img.seek(i)
+        tmp = ImageTk.PhotoImage(img)
+
+        for i in range(frame_duplicate):
+            retlist.append(tmp)
+
+    if effect is not None:
+        if 'reverse' in effect:
+            retlist.reverse()
+        elif 'gliter' in effect:
+            tmplist = retlist[1:-1]
+            tmplist.reverse()
+            retlist.extend(tmplist)
 
     return retlist
 
@@ -38,7 +71,7 @@ def gif2list(filename, minf=0, maxf=9999, speed=1):
 
 class AnimatedGifs:
     def __init__(self, root, frame=24, background=None, grid=None):
-        self.MAXSIZE = 64
+        self.MAXSIZE = 16
 
         self.root = root
         self.root.update()
@@ -66,6 +99,8 @@ class AnimatedGifs:
         self.gifs_active = []
 
         self.objects = [None] * self.MAXSIZE
+        self.objects_image = [None] * self.MAXSIZE
+        self.objects_text = [None] * self.MAXSIZE
         self.objects_remove = []
         self.cis = [None] * self.MAXSIZE
 
@@ -104,6 +139,7 @@ class AnimatedGifs:
     def remove(self, index):
         if self.gifs[index] is None or index is -1:
             raise IndexError
+
         self.gifs[index] = None
         self.gifs_position[index] = None
         self.gifs_cycle[index] = None
@@ -122,7 +158,7 @@ class AnimatedGifs:
         if self.isActive(index):
             self.remove(index)
 
-    def addImage(self, image, position):
+    def addImage(self, image, position, priority=True):
         self.index_obj = (self.index_obj + 1) % self.MAXSIZE
 
         rep = 0
@@ -135,6 +171,8 @@ class AnimatedGifs:
         self.objects[self.index_obj] = self.canvas.create_image(position[0] + image.width() // 2,
                                                                 position[1] + image.height() // 2,
                                                                 image=image)
+        if priority:
+            self.objects_image[self.index_obj] = (position, image)
         return self.index_obj
 
     def removeImage(self, index):
@@ -142,12 +180,13 @@ class AnimatedGifs:
             raise IndexError
 
         self.objects_remove.append(index)
+        self.objects_image[index] = None
 
     def removeImage_ig(self, index):
         if self.isActiveImage(index):
             self.removeImage(index)
 
-    def addText(self, text, position, font=None):
+    def addText(self, text, position, font=None, color=None):
         self.index_obj = (self.index_obj + 1) % self.MAXSIZE
 
         rep = 0
@@ -159,9 +198,13 @@ class AnimatedGifs:
 
         if font is None:
             font = Font(family='Helvetica', size=12, weight='bold')
+        if color is None:
+            color = '#000000'
 
         self.objects[self.index_obj] = self.canvas.create_text(position[0], position[1],
-                                                               font=font, text=text, fill='#eeeeee')
+                                                               font=font, text=text,
+                                                               fill=color)
+        self.objects_text[self.index_obj] = (position, font, text, color)
         return self.index_obj
 
     def removeText(self, index):
@@ -169,6 +212,7 @@ class AnimatedGifs:
             raise IndexError
 
         self.objects_remove.append(index)
+        self.objects_text[index] = None
 
     def removeText_ig(self, index):
         if self.isActiveText(index):
@@ -218,6 +262,23 @@ class AnimatedGifs:
                                                            image=self.gifs[i][self.gifs_frame[i]])
             else:
                 self.canvas.delete(self.cis[i])
+        for i in range(self.MAXSIZE):
+            if self.objects_image[i] is not None:
+                tmp = self.canvas.create_image(self.objects_image[i][0][0]
+                                               + self.objects_image[i][1].width() // 2,
+                                               self.objects_image[i][0][1]
+                                               + self.objects_image[i][1].height() // 2,
+                                               image=self.objects_image[i][1])
+                self.canvas.delete(self.objects[i])
+                self.objects[i] = tmp
+            if self.objects_text[i] is not None:
+                tmp = self.canvas.create_text(self.objects_text[i][0][0],
+                                              self.objects_text[i][0][1],
+                                              font=self.objects_text[i][1],
+                                              text=self.objects_text[i][2],
+                                              fill=self.objects_text[i][3])
+                self.canvas.delete(self.objects[i])
+                self.objects[i] = tmp
         for i in self.objects_remove:
             self.canvas.delete(self.objects[i])
             self.objects[i] = None

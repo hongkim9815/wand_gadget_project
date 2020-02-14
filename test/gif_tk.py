@@ -10,13 +10,14 @@ Comment This program is test for GUI performance of Raspberry Pi. It will test w
 """
 
 import tkinter as tk
+from PIL import Image, ImageTk, GifImagePlugin
 import time
 
 root = tk.Tk()
 root.geometry('1024x768')
 root['bg'] = 'white'
 
-sources_path = "../sources/"
+sources_path = "../sources/test/"
 
 
 def gcd(a, b):
@@ -34,7 +35,6 @@ def gif2list(filename, minf=0, maxf=9999):
             retlist.append(tk.PhotoImage(file=filename,
                                          format='gif -index {}'.format(it)))
             it += 1
-            print(it)
         except tk.TclError:
             break
 
@@ -43,6 +43,15 @@ def gif2list(filename, minf=0, maxf=9999):
 
     return retlist
 
+def gif2list_v2(filename, minf=0, maxf=9999):
+    retlist = []
+    img = Image.open(filename)
+
+    for i in range(img.n_frames):
+        img.seek(i)
+        retlist.append(ImageTk.PhotoImage(img, format='gif -index {}'.format(i)))
+
+    return retlist
 
 class AnimatedGif:
     def __init__(self, root, delay=0.04):
@@ -80,7 +89,7 @@ class AnimatedGif:
             if self.gifs[i] is not None:
                 frame4gif = self._it % len(self.gifs[i])
                 self.canvas.delete(self.cis[i])
-                self.cis[i] = self.canvas.create_image((i+2) * 100, (i+2) * 100,
+                self.cis[i] = self.canvas.create_image((i+1) * 300, (i+1) * 300,
                                                        image=self.gifs[i][frame4gif])
             else:
                 self.canvas.delete(self.cis[i])
@@ -93,18 +102,24 @@ class AnimatedGif:
             self.root.after(int(self.delay * 1000), self._animate)
 
 
-gif1_list = gif2list(sources_path + 'gif1.gif', 0, 30)
-gif2_list = gif2list(sources_path + 'gif2.gif')
-gif3_list = gif2list(sources_path + 'gif1.gif', 30, 40)
-gif4_list = gif2_list[:]
-gif5_list = gif2list(sources_path + 'gif1.gif', 40, 55)
+fname = '3active.gif'
+print(time.time())
+gif1_list = gif2list(sources_path + fname)
+print(time.time())
+# gif2_list = gif2list(sources_path + 'gif2.gif')
+# gif3_list = gif2list(sources_path + 'gif1.gif', 30, 40)
+# gif4_list = gif2_list[:]
+# gif5_list = gif2list(sources_path+ 'gif1.gif', 40, 55)
+print(time.time())
+gif21_list = gif2list_v2(sources_path + fname)
+print(time.time())
 
 anigif = AnimatedGif(root,delay=0.01)
 gif1code = anigif.add(gif1_list)
-gif2code = anigif.add(gif2_list)
-gif3code = anigif.add(gif3_list)
-gif4code = anigif.add(gif4_list)
-gif5code = anigif.add(gif5_list)
+gif2code = anigif.add(gif21_list)
+# gif3code = anigif.add(gif3_list)
+# gif4code = anigif.add(gif4_list)
+# gif5code = anigif.add(gif5_list)
 anigif.start()
 root.mainloop()
 

@@ -13,8 +13,7 @@ import tkinter
 from tkinter.font import Font
 from PIL import Image, ImageTk
 from libraries.wand import WandController, data2point
-from libraries.animatedgif import AnimatedGifs, gif2list
-from libraries.weather import weatherCanvas
+from libraries.animatedgif import AnimatedGifs, gif2list, gif2list_v2
 import RPi.GPIO as GPIO
 from multiprocessing import Process, Queue
 from time import sleep, time
@@ -32,8 +31,9 @@ if __name__ == "__main__":
 # CONSTANTS: Constants to define options and stable constants
     FADEIN_PHASE = -1
     INITIAL_PHASE = 0
+    DELAYED_PHASE = 99
     VERBOSE = False
-    MAIN_FRAME = 29.98
+    MAIN_FRAME = 24
 
     if VERBOSE:
         print("INITIALIZING CONSTANTS AND VARIABLES...")
@@ -52,6 +52,7 @@ if __name__ == "__main__":
     TKROOT = tkinter.Tk()
     TKROOT.geometry('1024x768')
     TKROOT['bg'] = 'white'
+    TKROOT.attributes('-fullscreen', True)
 
 
     IMAGES = dict()
@@ -159,8 +160,16 @@ def getBadgeName(data):
     return data['user_info']['user_badge_url'][27:-4]
 
 
+def getUserLevel(data):
+    return data['user_info']['user_level']
+
+
+def getUserName(data):
+    return data['user_info']['user_name']
+
+
 def drawPoints(canvas, dots, index, args):
-    if len(dots) < index + 40:
+    if len(dots) < index + 10:
         TKROOT.after(0, drawView, 1, args[0], time(), args[1], args[2])
 
         if not args[0].empty():
@@ -168,10 +177,14 @@ def drawPoints(canvas, dots, index, args):
         return
 
     x, y = dots[index]
-    point_size = 4
 
-    for i in range(point_size):
-        canvas.create_line(x, y + i, x + point_size, y + i, fill='white')
+    canvas.create_line(x + 2, y + 0, x + 5, y + 0, fill='black')
+    canvas.create_line(x + 1, y + 1, x + 6, y + 1, fill='black')
+    canvas.create_line(x + 0, y + 2, x + 7, y + 2, fill='black')
+    canvas.create_line(x + 0, y + 3, x + 7, y + 3, fill='black')
+    canvas.create_line(x + 0, y + 4, x + 7, y + 4, fill='black')
+    canvas.create_line(x + 1, y + 5, x + 6, y + 5, fill='black')
+    canvas.create_line(x + 2, y + 6, x + 5, y + 6, fill='black')
 
     TKROOT.after(1, drawPoints, canvas, dots, index + 1, args)
 
@@ -180,11 +193,11 @@ def drawPoints(canvas, dots, index, args):
 # Main-view
 # ================================================================================
 
-def initView(init, queue=None, objs=None):
+def initView(phase, queue=None, objs=None):
     if objs is None:
         objs = [None]
 
-    if init:
+    if phase is INITIAL_PHASE:
         if queue is None:
             queue = Queue()
             p1 = Process(target=wandProcess, args=(queue, ))
@@ -193,50 +206,54 @@ def initView(init, queue=None, objs=None):
             p1.start()
             p2.start()
             p3.start()
-        objs[0] = ANIGIF.add(GIFS['working'], (120, 162), overlap=True)
+        objs[0] = ANIGIF.add(GIFS['default_char'], (89, 89))
 
-        TKROOT.after(1000, initView, False, queue, objs)
+        TKROOT.after(1000, initView, 1, queue, objs)
 
-    else:
+    elif phase is 1:
         if not queue.empty():
             datatype, data = queue.get()
             if datatype == 'w':
                 user_data_get = {'wand_uid': data['wand_uid'],
                                  'process': None,
                                  'user_data': None}
-                ANIGIF.remove(objs[0])
-                # drawView(INITIAL_PHASE, queue, time(), [user_data_get, None], None)
-                main(FADEIN_PHASE, queue=queue, execute_time=time(), user_data_get=user_data_get)
+                TKROOT.after(0, main, FADEIN_PHASE, queue, None, time(), user_data_get, None)
+                TKROOT.after(200, initView, DELAYED_PHASE, queue, objs)
 
             elif datatype == 'u':
-                ANIGIF.remove(objs[0])
-                helloView(INITIAL_PHASE)
-                TKROOT.after(2000, initView, True, queue, objs)
+                TKROOT.after(0, helloView, INITIAL_PHASE)
+                TKROOT.after(4000, initView, 1, queue, objs)
 
             elif datatype == 'b':
                 user_data_get = {'wand_uid': 1,
                                  'process': None,
                                  'user_data': None}
-                ANIGIF.remove(objs[0])
-                main(FADEIN_PHASE, queue=queue, execute_time=time(), user_data_get=user_data_get)
+                TKROOT.after(0, main, FADEIN_PHASE, queue, None, time(), user_data_get, None)
+                TKROOT.after(200, initView, DELAYED_PHASE, queue, objs)
 
             else:
-                TKROOT.after(250, initView, False, queue, objs)
+                TKROOT.after(250, initView, 1, queue, objs)
 
         else:
-            TKROOT.after(250, initView, False, queue, objs)
+            TKROOT.after(250, initView, 1, queue, objs)
+
+    elif phase is DELAYED_PHASE:
+        ANIGIF.remove(objs[0])
+
 
 
 def main(phase, queue=None, objs=None, execute_time=-1, user_data_get=None, ttsproc=None):
 
-    def object_remover():
+    def object_remover(flag=True):
         data = user_data_get['user_data']
-        ANIGIF.add(GIFS['fadeout_blackboard'], (370, 215), cycle=1)
-        if data is not None:
-            ANIGIF.add(GIFS['fadeout_' + getCourseFilename(data)], (450, 375), cycle=1)
-        ANIGIF.remove(objs[0])
-        ANIGIF.removeImage_ig(objs[1])
-        ANIGIF.removeImage(objs[2])
+        # ANIGIF.add(GIFS['fadeout_blackboard'], (370, 215), cycle=1)
+        # if data is not None:
+        #     ANIGIF.add(GIFS['fadeout_' + getCourseFilename(data)], (450, 375), cycle=1)
+        if flag:
+            ANIGIF.remove(objs[0])
+        ANIGIF.add(GIFS['close_papirus'], (450, 160), cycle=1)
+        ANIGIF.removeImage(objs[1])
+        ANIGIF.removeImage_ig(objs[2])
         ANIGIF.remove_ig(objs[3])
         ANIGIF.removeImage_ig(objs[4])
         ANIGIF.removeText_ig(objs[5])
@@ -247,21 +264,26 @@ def main(phase, queue=None, objs=None, execute_time=-1, user_data_get=None, ttsp
 
 
     def course_view_constructor(objs, data):
-        objs[4] = ANIGIF.addImage(IMAGES[getCourseFilename(data)], (450, 375))
-        objs[5] = ANIGIF.addText(getCourseTitle(data), (500, 350))
+        objs[4] = ANIGIF.addImage(IMAGES[getCourseFilename(data)], (600, 325))
+        # objs[5] = ANIGIF.addText(getCourseTitle(data), (500, 350))
         mission_order, mission_title = getTodayMission(data)
         font = Font(family='NanumBarunpen', size=12, weight='bold')
-        # UnPilgiBold
-        objs[6] = ANIGIF.addText(mission_order, (775, 400), font=font)
-        if len(mission_title) > 45:
-            objs[7] = ANIGIF.addText(mission_title[:20], (775, 430), font=font)
-            objs[8] = ANIGIF.addText(mission_title[20:40], (775, 460), font=font)
-            objs[8] = ANIGIF.addText(mission_title[40:], (775, 490), font=font)
-        if len(mission_title) > 25:
-            objs[7] = ANIGIF.addText(mission_title[:20], (775, 430), font=font)
-            objs[8] = ANIGIF.addText(mission_title[20:], (775, 460), font=font)
+        font_title = Font(family='NanumBarunpen', size=14, weight='bold')
+        title = 'Lv.' + str(getUserLevel(data)) + " " + getUserName(data) + ' 법사님의 오늘 할 일'
+        objs[5] = ANIGIF.addText(title, (675, 300), font=font)
+        if len(mission_title) > 70:
+            objs[6] = ANIGIF.addText(mission_order, (675, 425), font=font)
+            objs[7] = ANIGIF.addText(mission_title[:30], (675, 450), font=font)
+            objs[8] = ANIGIF.addText(mission_title[30:60], (675, 475), font=font)
+            objs[8] = ANIGIF.addText(mission_title[60:], (675, 500), font=font)
+        if len(mission_title) > 40:
+            objs[6] = ANIGIF.addText(mission_order, (675, 450), font=font)
+            objs[7] = ANIGIF.addText(mission_title[:30], (675, 475), font=font)
+            objs[8] = ANIGIF.addText(mission_title[30:], (675, 500), font=font)
         else:
-            objs[7] = ANIGIF.addText(mission_title, (775, 430), font=font)
+            objs[6] = ANIGIF.addText(mission_order, (675, 475), font=font)
+            objs[7] = ANIGIF.addText(mission_title, (675, 500), font=font)
+
 
 
     if objs is None:
@@ -273,8 +295,11 @@ def main(phase, queue=None, objs=None, execute_time=-1, user_data_get=None, ttsp
         wand_uid = user_data_get['wand_uid']
 
     if time() - execute_time > 10:
-        TKROOT.after(0, initView, True, queue)
-        object_remover()
+        object_remover(False)
+        TKROOT.after(int(1000 / MAIN_FRAME * len(GIFS['close_papirus']) + 100),
+                     initView, INITIAL_PHASE, queue)
+        TKROOT.after(int(1000 / MAIN_FRAME * len(GIFS['close_papirus']) + 100),
+                     main, DELAYED_PHASE, queue, objs, time(), user_data_get)
         return
 
     if ttsproc is not None:
@@ -283,24 +308,22 @@ def main(phase, queue=None, objs=None, execute_time=-1, user_data_get=None, ttsp
             ttsproc = None
 
 
+
+    if phase is FADEIN_PHASE:
+        objs[0] = ANIGIF.add(GIFS['specific_page'], (89, 89))
+        ANIGIF.add(GIFS['open_papirus'], (450, 160), cycle=1)
+        TKROOT.after(int(1000 / MAIN_FRAME * len(GIFS['open_papirus']) + 100),
+                     main, INITIAL_PHASE, queue, objs, time(), user_data_get)
+
     # INITIATE PART
     # Get user data from "userinfoProcess" with "wand_uid"
-    if phase is FADEIN_PHASE:
-        # ANIGIF.add(GIFS['fadein_blackboard'], (370, 215), cycle=1)
-        TKROOT.after(int(8 * 1000 / MAIN_FRAME), main,
-                     INITIAL_PHASE, queue, objs, time(), user_data_get)
-
     elif phase is INITIAL_PHASE:
-
         # If objects are not in current view...
-        if objs[0] is None and objs[1] is None and objs[2] is None:
-            objs[0] = ANIGIF.add(GIFS['maingif1'], (0, 250), overlap=False)
-            # objs[1] = ANIGIF.addImage(IMAGES['textbox_left'], (340, 120))
-            objs[2] = ANIGIF.addImage(IMAGES['blackboard'], (370, 215))
+        if objs[1] is None:
+            objs[1] = ANIGIF.addImage(IMAGES['papirus'], (450, 160))
 
         # If "userinfoProcess" is not active...
         if user_data_get['process'] is None:
-            objs[3] = ANIGIF.add(GIFS['loading'], (600, 400))
             user_data_get['process'] = Process(target=userinfoProcess, args=(queue, wand_uid))
             user_data_get['process'].start()
             TKROOT.after(100, main, INITIAL_PHASE, queue, objs, time(), user_data_get)
@@ -318,13 +341,11 @@ def main(phase, queue=None, objs=None, execute_time=-1, user_data_get=None, ttsp
                     user_data_get['process'].join()
 
                     if data['result_state'] is 1:
-                        ANIGIF.remove(objs[3])
                         course_view_constructor(objs, data['result'])
 
-                        username = data['result']['user_info']['user_name']
+                        username = getUserName(data['result'])
                         ttsproc = Process(target=ttsProcess,
-                                          args=("안녕, " + username
-                                                + "! 코딩마법학교에 온걸 환영해!", ))
+                                          args=("e안녕하세요, " + username + "법사님!", ))
                         ttsproc.start()
 
                         user_data_get['user_data'] = data['result']
@@ -352,6 +373,8 @@ def main(phase, queue=None, objs=None, execute_time=-1, user_data_get=None, ttsp
             course_view_constructor(objs, user_data_get['user_data'])
             TKROOT.after(100, main, 1, queue, objs, time(), user_data_get, ttsproc)
 
+    elif phase is DELAYED_PHASE:
+        ANIGIF.remove(objs[0])
 
     elif not queue.empty():
         user_data = user_data_get['user_data']
@@ -365,25 +388,26 @@ def main(phase, queue=None, objs=None, execute_time=-1, user_data_get=None, ttsp
         if datatype == 'w':
             if data['gesture'] == 'star':
                 object_remover()
-                badgeView(INITIAL_PHASE, user_data, time())
+                badgeView(FADEIN_PHASE, user_data, time())
                 TKROOT.after(5000, main, FADEIN_PHASE, queue, None, time(), user_data_get, ttsproc)
-
-            elif data['gesture'] == 'triangle':
-                object_remover()
-                weatherView(INITIAL_PHASE)
-                TKROOT.after(2000, main, FADEIN_PHASE, queue, None, time(), user_data_get, ttsproc)
 
             # Else, goto practice board.
             else:
-                object_remover()
-                drawView(INITIAL_PHASE, queue, time(), [user_data_get, ttsproc], None)
+                object_remover(False)
+                TKROOT.after(int(1000 / MAIN_FRAME * len(GIFS['close_papirus']) + 100),
+                             drawView, INITIAL_PHASE, queue, time(),
+                             [user_data_get, ttsproc, objs[0]], None)
+                TKROOT.after(int(1000 / MAIN_FRAME * len(GIFS['close_papirus']) + 100),
+                             main, DELAYED_PHASE, queue, objs, time(), user_data_get)
 
         # BUTTON PROCESS
         elif datatype is 'b':
-            object_remover()
-            badgeView(FADEIN_PHASE, user_data, time())
-            TKROOT.after(5000 + int(8 * 1000 / MAIN_FRAME), main,
-                         FADEIN_PHASE, queue, None, time(), user_data_get, ttsproc)
+            object_remover(False)
+            TKROOT.after(int(1000 / MAIN_FRAME * len(GIFS['close_papirus']) + 100),
+                         drawView, INITIAL_PHASE, queue, time(),
+                         [user_data_get, ttsproc, objs[0]], None)
+            TKROOT.after(int(1000 / MAIN_FRAME * len(GIFS['close_papirus']) + 100),
+                         main, DELAYED_PHASE, queue, objs, time(), user_data_get)
 
         # ULTRASONIC PROCESS
         elif datatype is 'u':
@@ -402,42 +426,40 @@ def main(phase, queue=None, objs=None, execute_time=-1, user_data_get=None, ttsp
 # Sub-views
 # ================================================================================
 
-def weatherView(phase, canvas=None, objs=None):
-    if objs is None:
-        objs = []
-
-    if phase is INITIAL_PHASE:
-        canvas, objs = weatherCanvas(TKROOT, (200, 200))
-        TKROOT.after(3000, weatherView, False, canvas, objs)
-
-    else:
-        canvas.destroy()
-
-
 def drawView(phase, queue, execute_time, mainargs, objs=None):
     if objs is None:
-        objs = [None] * 1
+        objs = [None] * 2
 
     if time() - execute_time > 10:
         objs[0].destroy()
+        ANIGIF.removeImage(objs[1])
+
+        # mainobjs = [None] * 10
+        # mainobjs[0] = mainargs[2]
         TKROOT.after(0, main, FADEIN_PHASE, queue, None, time(), mainargs[0], mainargs[1])
         return
 
-
-    canvas_size = (840, 565)
-    draw_size = (canvas_size[0] - 100, canvas_size[1] - 100)
-    canvas_center = (canvas_size[0] // 2, canvas_size[1] // 2)
+    canvas_size = (600, 450)
+    draw_size = (560, 350)
+    draw_margin = ((canvas_size[0] - draw_size[0]) // 2, canvas_size[1] - draw_size[1] - 70)
+    draw_center = (canvas_size[0] // 2, canvas_size[1] // 2)
     point_gap = 3
     font = Font(family='NanumBarunpen', size=15, weight='bold')
 
 
     if phase is INITIAL_PHASE:
-        objs[0] = tkinter.Canvas(TKROOT, bg="black", width=canvas_size[0], height=canvas_size[1])
+        objs[0] = tkinter.Canvas(TKROOT, bg="white",
+                                 width=canvas_size[0], height=canvas_size[1],
+                                 highlightthickness=0)
         objs[0].pack()
-        objs[0].place(x=100, y=100)
+        objs[0].place(x=210, y=150)
+        objs[1] = ANIGIF.addImage(IMAGES['static_papirus'], (89, 89), priority=False)
+        objs[0].create_image(89 + 850 // 2 - 210, 89 + 592 // 2 - 150,
+                             image=IMAGES['static_papirus'])
+
         if not queue.empty():
             queue.get()
-        TKROOT.after(100, drawView, 1, queue, time(), mainargs, objs)
+        TKROOT.after(1000, drawView, 1, queue, time(), mainargs, objs)
 
     else:
         if not queue.empty():
@@ -456,18 +478,16 @@ def drawView(phase, queue, execute_time, mainargs, objs=None):
                 points_gathered = []
                 xmul, ymul = 0, 0
                 for x, y in points:
-                    if xtmp - x > 98:
+                    if xtmp - x > 80:
                         xmul += 1
-                    elif x - xtmp > 98:
+                    elif x - xtmp > 80:
                         xmul -= 1
-                    if ytmp - y > 98:
+                    if ytmp - y > 80:
                         ymul += 1
-                    elif y - ytmp > 98:
+                    elif y - ytmp > 80:
                         ymul -= 1
                     points_gathered.append((x + xmul * 100, y + ymul * 100))
                     xtmp, ytmp = x, y
-                    if xmul != 0 or ymul != 0:
-                        print("!")
 
                 xMin, xMax, yMin, yMax = 999, -999, 999, -999
 
@@ -487,35 +507,37 @@ def drawView(phase, queue, execute_time, mainargs, objs=None):
 
                 gesture = data['gesture']
                 objs[0].delete("all")
+                objs[0].create_image(89 + 850 // 2 - 210, 89 + 592 // 2 - 150,
+                                     image=IMAGES['static_papirus'])
                 if gesture is None:
-                    objs[0].create_text(canvas_center[0], 30,
-                                        font=font, text="This Gesture: None", fill='#eeeeee')
+                    objs[0].create_text(draw_center[0], 30,
+                                        font=font, text="This Gesture: None", fill='#000000')
                 else:
-                    objs[0].create_text(canvas_center[0], 30,
-                                        font=font, text="This Gesture: " + gesture, fill='#eeeeee')
+                    objs[0].create_text(draw_center[0], 30,
+                                        font=font, text="This Gesture: " + gesture, fill='#000000')
 
 
                 xcenter, ycenter = (xMax + xMin) // 2, (yMax + yMin) // 2
                 try:
                     if (yMax - yMin) * draw_size[0] > (xMax - xMin) * draw_size[1]:
-                        ratio = (canvas_size[1] - 100) / (yMax - yMin)
+                        ratio = (draw_size[1]) / (yMax - yMin)
                     else:
-                        ratio = (canvas_size[0] - 100) / (xMax - xMin)
+                        ratio = (draw_size[0]) / (xMax - xMin)
                 except ZeroDivisionError:
                     TKROOT.after(100, drawView, 1, queue, time(), mainargs, objs)
                     return
 
                 xtmp, ytmp = points_gathered[0]
-                xtmp = int(canvas_center[0] + (xtmp - xcenter) * ratio)
-                ytmp = int(canvas_center[1] + (ycenter - ytmp) * ratio)
+                xtmp = int(draw_center[0] + (xtmp - xcenter) * ratio)
+                ytmp = int(draw_center[1] + (ycenter - ytmp) * ratio)
                 dots.append((xtmp, ytmp))
 
                 smooth_cnt = 0
                 for x, y in points_gathered:
                     x, y = int(x), int(y)
 
-                    xdot = int(canvas_center[0] + (x - xcenter) * ratio)
-                    ydot = int(canvas_center[1] + (ycenter - y) * ratio)
+                    xdot = int(draw_center[0] + (x - xcenter) * ratio)
+                    ydot = int(draw_center[1] + (ycenter - y) * ratio)
 
                     if xdot != xtmp or ydot != ytmp:
                         if xdot == xtmp:
@@ -536,18 +558,21 @@ def drawView(phase, queue, execute_time, mainargs, objs=None):
                             if abs(slope) < 1:
                                 if xdot > xtmp:
                                     for i in range(1, xdot - xtmp + 1, point_gap):
-                                        dots.append((xtmp + i, ytmp + int(i * slope)))
+                                        dots.append((xtmp + i + draw_margin[0],
+                                                     ytmp + int(i * slope) + draw_margin[1]))
                                 else:
                                     for i in range(0, xtmp - xdot, point_gap):
-                                        dots.append((xdot + i, ydot + int(i * slope)))
+                                        dots.append((xdot + i + draw_margin[0],
+                                                     ydot + int(i * slope) + draw_margin[1]))
                             else:
                                 if ydot > ytmp:
                                     for i in range(1, ydot - ytmp + 1, point_gap):
-                                        dots.append((xtmp + int(i / slope), ytmp + i))
+                                        dots.append((xtmp + int(i / slope) + draw_margin[0],
+                                                     ytmp + i + draw_margin[1]))
                                 else:
                                     for i in range(0, ytmp - ydot, point_gap):
-                                        dots.append((xdot + int(i / slope), ydot + i))
-
+                                        dots.append((xdot + int(i / slope) + draw_margin[0],
+                                                     ydot + i + draw_margin[1]))
                             xtmp, ytmp = xdot, ydot
 
                 TKROOT.after(0, drawPoints, objs[0], dots, 0, [queue, mainargs, objs])
@@ -558,18 +583,17 @@ def drawView(phase, queue, execute_time, mainargs, objs=None):
             TKROOT.after(100, drawView, 1, queue, execute_time, mainargs, objs)
 
 
-
-
-def helloView(phase, objs=None):
-    if objs is None:
-        objs = [None]
-
+def helloView(phase, musicproc=None):
     if phase is INITIAL_PHASE:
-        objs[0] = ANIGIF.add(GIFS['gif2'], (300, 300), overlap = False)
-        TKROOT.after(2000, helloView, False, objs)
-
-    else:
-        ANIGIF.remove(objs[0])
+        musicproc = Process(target=musicProcess, args=(SOURCES_PATH + "sound/eogeurae.m4a", ))
+        ANIGIF.add(GIFS['active_char'], (89, 89), cycle=1)
+        musicproc.start()
+        TKROOT.after(0, helloView, DELAYED_PHASE, musicproc)
+    elif phase is DELAYED_PHASE:
+        if musicproc.is_alive():
+            TKROOT.after(1000, helloView, DELAYED_PHASE, musicproc)
+        else:
+            musicproc.join()
 
 
 def badgeView(phase, user_info, execute_time, objs=None):
@@ -607,7 +631,7 @@ def badgeView(phase, user_info, execute_time, objs=None):
         for i in range(4 - len(user_info['badge_info'])):
             ANIGIF.add(GIFS['fadein_badge_frame'], badge_pos[3 - i], cycle=1)
 
-        TKROOT.after(int(8 * 1000 / MAIN_FRAME), badgeView,
+        TKROOT.after(int(8 * 1000 / MAIN_FRAME + 100), badgeView,
                      INITIAL_PHASE, user_info, execute_time, objs)
 
     elif phase is INITIAL_PHASE:
@@ -632,7 +656,6 @@ def badgeView(phase, user_info, execute_time, objs=None):
 
     else:
         object_remover()
-
 
 # ================================================================================
 # Child-Process
@@ -775,15 +798,27 @@ def ttsProcess(text):
     if VERBOSE:
         print("TTS PROCESS START")
 
-    # The reason of adding "S" is that the initial volume of mplayer is too low...
     if len(glob(TMP_PATH + "TTS-" + text[4:7] + "*")) is not 1:
-        tts = gTTS(text="S" + text, lang='ko')
+        tts = gTTS(text="" + text, lang='ko')
         tts.save(TMP_PATH + "TTS-" + text[4:7] + ".mp3")
     system("mplayer -quiet -speed 1.05 "
            + TMP_PATH + "TTS-" + text[4:7] + ".mp3 > /dev/null 2> /dev/null")
 
     if VERBOSE:
         print("TTS PROCESS COMPLETED")
+
+    exit(0)
+
+
+# CHILD PROCESS
+def musicProcess(filename):
+    if VERBOSE:
+        print("MUSIC PROCESS START")
+
+    system("mplayer -quiet " + filename + " > /dev/null 2> /dev/null")
+
+    if VERBOSE:
+        print("MUSIC PROCESS COMPLETED")
 
     exit(0)
 
@@ -800,10 +835,9 @@ if __name__ == "__main__":
 # IMAGES: Dictionary(PhotoImage())
 #         A dictionary of PhotoImage classes.
     IMAGES['background'] = tkinter.PhotoImage(file=SOURCES_PATH + 'background_frame.png')
-    IMAGES['textbox_left'] = tkinter.PhotoImage(file=SOURCES_PATH + 'textbox-left.png')
-    tmp = Image.open(SOURCES_PATH + 'blackboard.png').resize((int(480 * 7 / 6), int(343 * 7 / 6)),
-                                                             Image.ANTIALIAS)
-    IMAGES['blackboard'] = ImageTk.PhotoImage(tmp)
+    IMAGES['papirus'] = ImageTk.PhotoImage(Image.open(SOURCES_PATH + 'papirus.png'))
+    IMAGES['drawing_papirus'] = ImageTk.PhotoImage(Image.open(SOURCES_PATH + 'drawing_papirus.png'))
+    IMAGES['static_papirus'] = ImageTk.PhotoImage(Image.open(SOURCES_PATH + 'static_papirus.png'))
 
     for f in glob(BADGE_PATH + '*'):
         imgtmp = Image.open(f)
@@ -815,31 +849,27 @@ if __name__ == "__main__":
 
     for f in glob(COURSE_PATH + '*'):
         imgtmp = Image.open(f)
-        imgtmp = roundImage(imgtmp, rounding=3, radius = 15, resize=(320 * 4 // 6, 220 * 4 // 6))
+        imgtmp = roundImage(imgtmp, rounding=3, radius = 15, resize=(320 // 2, 220 // 2))
         IMAGES[f[len(COURSE_PATH):-4]] = ImageTk.PhotoImage(imgtmp)
 
 
 # GIFS: Dict(List(PhotoImage()))
 #       A dictionary consists of lists of PhotoImage classes configured by function gif2list().
-    # GIFS['cat'] = gif2list(SOURCES_PATH + 'cat.gif', 0, 20)
-    # GIFS['main'] = gif2list(SOURCES_PATH + 'main.gif', 0, 20)
-    GIFS['loading'] = gif2list(SOURCES_PATH + 'loading.gif')
-    GIFS['maingif1'] = gif2list(SOURCES_PATH + 'maingif1.gif')
-    GIFS['maingif2'] = gif2list(SOURCES_PATH + 'maingif2.gif')
-    GIFS['gif2'] = gif2list(SOURCES_PATH + 'gif2.gif')
-    GIFS['working'] = gif2list(SOURCES_PATH + 'working.gif')
+    GIFS['default_char'] = gif2list_v2(SOURCES_PATH + 'default_char.gif', effect='gliter',
+                                       frame_skip=2, frame_duplicate=2)
+    GIFS['active_char'] = gif2list_v2(SOURCES_PATH + 'active_char.gif', effect='gliter')
+    GIFS['specific_page'] = gif2list_v2(SOURCES_PATH + 'specific_page.gif', effect='gliter',
+                                        frame_skip=2, frame_duplicate=2)
+    GIFS['open_papirus'] = gif2list_v2(SOURCES_PATH + 'open_papirus.gif')
+    GIFS['close_papirus'] = gif2list_v2(SOURCES_PATH + 'close_papirus.gif')
+    GIFS['drawing_open_papirus'] = gif2list_v2(SOURCES_PATH + 'drawing_open_papirus.gif')
+
     GIFS['gliter1'] = png2list(SOURCES_PATH + 'badge/user_badge_gliter1.png', 16,
                                frame_duplicate=1, resize=(330, 330), effect='gliter')
     GIFS['gliter2'] = png2list(SOURCES_PATH + 'badge/user_badge_gliter2.png', 16,
                                frame_duplicate=1, resize=(330, 330), effect='gliter')
     GIFS['gliter3'] = png2list(SOURCES_PATH + 'badge/user_badge_gliter3.png', 16,
                                frame_duplicate=1, resize=(330, 330), effect='gliter')
-
-    GIFS['fadein_blackboard'] = png2list(SOURCES_PATH +'blackboard.png', 8,
-                                         resize=(int(480 * 7 / 6), int(343 * 7 / 6)))
-    GIFS['fadeout_blackboard'] = png2list(SOURCES_PATH + 'blackboard.png', 8,
-                                          resize=(int(480 * 7 / 6), int(343 * 7 / 6)),
-                                          effect='reverse')
 
     for f in glob(BADGE_PATH + '*'):
         filename = f[len(BADGE_PATH):-4]
@@ -850,24 +880,15 @@ if __name__ == "__main__":
             GIFS['fadein_' + filename] = png2list(f, 8, resize=(100, 100))
             GIFS['fadeout_' + filename] = png2list(f, 8, effect='reverse', resize=(100, 100))
 
-    for f in glob(COURSE_PATH + '*'):
-        filename = f[len(COURSE_PATH):-4]
-        GIFS['fadein_' + filename] = png2list(f, 8, effect='round',
-                                              resize=(320 * 4 // 6, 220 * 4 // 6))
-        GIFS['fadeout_' + filename] = png2list(f, 8, effect='reverse|round',
-                                               resize=(320 * 4 // 6, 220 * 4 // 6))
-
 
 # ANIGIF: Class AnimatedGifs()
 #         A class for animating GIF file well.
-    # ANIGIF = AnimatedGifs(TKROOT, frame=29.98, background=IMAGES['background'], grid=50)
-    ANIGIF = AnimatedGifs(TKROOT, frame=MAIN_FRAME, background=IMAGES['background'], grid=50)
+    ANIGIF = AnimatedGifs(TKROOT, frame=MAIN_FRAME, background=IMAGES['background'])
     ANIGIF.start()
-
 
     if VERBOSE:
         print("DONE.")
 
-    TKROOT.after(0, initView, True)
+    TKROOT.after(0, initView, INITIAL_PHASE)
     TKROOT.mainloop()
 
