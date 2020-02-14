@@ -32,9 +32,11 @@ if __name__ == "__main__":
     FADEIN_PHASE = -1
     INITIAL_PHASE = 0
     DELAYED_PHASE = 99
-    VERBOSE = False
     MAIN_FRAME = 24
 
+    DETECT_DISTANCE = 200
+
+    VERBOSE = False
     if VERBOSE:
         print("INITIALIZING CONSTANTS AND VARIABLES...")
 
@@ -752,7 +754,7 @@ def ultrasonicProcess(queue):
             TimeElapsed = StopTime - StartTime
             distance = (TimeElapsed * 34300) / 2
 
-            if distance < 10:
+            if distance < DETECT_DISTANCE:
                 flag += 1
 
         sleep(0.2)
@@ -836,7 +838,6 @@ if __name__ == "__main__":
 #         A dictionary of PhotoImage classes.
     IMAGES['background'] = tkinter.PhotoImage(file=SOURCES_PATH + 'background_frame.png')
     IMAGES['papirus'] = ImageTk.PhotoImage(Image.open(SOURCES_PATH + 'papirus.png'))
-    IMAGES['drawing_papirus'] = ImageTk.PhotoImage(Image.open(SOURCES_PATH + 'drawing_papirus.png'))
     IMAGES['static_papirus'] = ImageTk.PhotoImage(Image.open(SOURCES_PATH + 'static_papirus.png'))
 
     for f in glob(BADGE_PATH + '*'):
@@ -862,7 +863,6 @@ if __name__ == "__main__":
                                         frame_skip=2, frame_duplicate=2)
     GIFS['open_papirus'] = gif2list_v2(SOURCES_PATH + 'open_papirus.gif')
     GIFS['close_papirus'] = gif2list_v2(SOURCES_PATH + 'close_papirus.gif')
-    GIFS['drawing_open_papirus'] = gif2list_v2(SOURCES_PATH + 'drawing_open_papirus.gif')
 
     GIFS['gliter1'] = png2list(SOURCES_PATH + 'badge/user_badge_gliter1.png', 16,
                                frame_duplicate=1, resize=(330, 330), effect='gliter')
