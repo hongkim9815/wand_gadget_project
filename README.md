@@ -39,15 +39,20 @@ setup.sh                    setup for manual installation
 
 ### Manual installation
 
+I strongly recommend you to utilize this repository in Raspberry Pi 3 Model B+.
+
+Below code is Manual installation.
+
 ```
 git clone https://github.com/hongkim9815/wand_gadget_project.git
 cd wand_gadget_project && sudo ./setup.sh
 ```
 
+Also, you should do [this](https://www.raspberrypi.org/documentation/configuration/uart.md) for wand connection.
+
 ### Requirements
 
 This program is tested on python 3.7.3, but it might work well on python 3.7.\* or later.
-Also, I strongly recommend utilizing this repository in Raspberry Pi 3 Model B+.
 
 All required modules are in _requirements.txt_.
 Although below code is in setup.sh, if you want to use it saperately, type this code in your command line:
