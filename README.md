@@ -47,7 +47,7 @@ cd wand_gadget_project && sudo ./setup.sh
 ### Requirements
 
 This program is tested on python 3.7.3, but it might work well on python 3.7.\* or later.
-Also, I strongly recommend utilizing this repository in Raspberry Pi 3+ Model B.
+Also, I strongly recommend utilizing this repository in Raspberry Pi 3 Model B+.
 
 All required modules are in _requirements.txt_.
 Although below code is in setup.sh, if you want to use it saperately, type this code in your command line:
@@ -55,6 +55,12 @@ Although below code is in setup.sh, if you want to use it saperately, type this 
 ```
 pip3 install -r requirements.txt
 ```
+
+### Electronic Circuit
+
+<p align="center">
+    <img src="../master/sources/report/circuit.png">
+</p>
 
 
 ## Execution
