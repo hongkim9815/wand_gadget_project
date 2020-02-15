@@ -134,7 +134,6 @@ class AnimatedGifs:
 
 
 def process_serial(ser, que):
-    print("PRINTTEST")
     ser, data = read_serial(None)
     if len(str(data)) > 4:
         print_data_enc(data)
