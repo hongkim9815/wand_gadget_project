@@ -64,7 +64,8 @@ pip3 install -r requirements.txt
 ### Electronic Circuit
 
 <p align="center">
-    <img src="../master/sources/report/circuit.png">
+  <br>
+  <img src="../master/sources/report/circuit.png">
 </p>
 
 
@@ -89,3 +90,13 @@ For example:
 ```
 cd wand_gadget_project/test && ./gif_tk.py
 ```
+
+## Development
+
+Below graph is WBS of Jr Coding Lab internship.
+
+<p align="center">
+  <br>
+  <img src="../master/sources/report/wbs.png">
+</p>
+
